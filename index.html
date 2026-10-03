@@ -1,0 +1,2106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CBT Workbook</title>
+  <style>
+    /* Tokens. Text pairs meet WCAG 2.2 SC 1.4.3 (4.5:1); control borders and focus
+       rings meet SC 1.4.11 (3:1). Chart colors validated with the dataviz palette
+       checker (ordinal, both themes). All verified by #selftest. */
+    :root {
+      color-scheme: light;
+      --bg: #f6f5f1;
+      --surface: #ffffff;
+      --surface-2: #f1efe9;
+      --text: #1d1c1a;
+      --text-muted: #57544e;
+      --border: #e2dfd6;
+      --control-border: #8b877d;
+      --primary: #1f5f99;
+      --primary-hover: #184c7b;
+      --primary-soft: #e6eef7;
+      --on-primary: #ffffff;
+      --focus-ring: #1f5f99;
+      --danger: #b42318;
+      --danger-hover: #912018;
+      --on-danger: #ffffff;
+      --warning-bg: #fdf6e3;
+      --warning-border: #b7791f;
+      --warning-text: #7a4a0b;
+      --hint-bg: #eef6f1;
+      --hint-border: #2f7d55;
+      --hint-text: #1d5a3a;
+      --badge-bg: #ece9e1;
+      --viz-before: #86b6ef;
+      --viz-after: #1c5cab;
+      --viz-bar: #2a78d6;
+      --viz-grid: #ebe9e3;
+      --viz-axis: #c3c2b7;
+      --heat-0: #f1efe9; --heat-1: #cde2fb; --heat-2: #9ec5f4; --heat-3: #6da7ec;
+      --heat-4: #3987e5; --heat-5: #256abf; --heat-6: #184f95;
+      --radius: 8px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        color-scheme: dark;
+        --bg: #16171a;
+        --surface: #1f2125;
+        --surface-2: #272a2f;
+        --text: #f2f1ed;
+        --text-muted: #a9a7a0;
+        --border: #33363c;
+        --control-border: #7d7a73;
+        --primary: #7fb3ea;
+        --primary-hover: #a6cbf2;
+        --primary-soft: #1e3247;
+        --on-primary: #10161d;
+        --focus-ring: #7fb3ea;
+        --danger: #f08b80;
+        --danger-hover: #f5aca3;
+        --on-danger: #16171a;
+        --warning-bg: #3a2a0c;
+        --warning-border: #c98a2b;
+        --warning-text: #f6d79a;
+        --hint-bg: #12301f;
+        --hint-border: #4fb985;
+        --hint-text: #b5e6cb;
+        --badge-bg: #30333a;
+        --viz-before: #256abf;
+        --viz-after: #9ec5f4;
+        --viz-bar: #3987e5;
+        --viz-grid: #2c2e33;
+        --viz-axis: #4a4d53;
+        --heat-0: #2a2c31; --heat-1: #184f95; --heat-2: #256abf; --heat-3: #3987e5;
+        --heat-4: #6da7ec; --heat-5: #9ec5f4; --heat-6: #cde2fb;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-padding-bottom: 6rem; } /* SC 2.4.11: keep focused controls clear of the fixed footer */
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg); color: var(--text);
+      line-height: 1.55; min-height: 100vh;
+      display: flex; flex-direction: column;
+    }
+    :focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+    h1[tabindex="-1"]:focus { outline: 2px solid var(--focus-ring); outline-offset: 4px; }
+    [hidden] { display: none !important; }
+
+    .skip-link { position: absolute; left: -9999px; top: 0; }
+    .skip-link:focus { left: 1rem; top: 0.5rem; z-index: 200; background: var(--surface); color: var(--text); padding: 0.5rem 0.75rem; border: 2px solid var(--focus-ring); border-radius: var(--radius); }
+
+    header {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 0.6rem 1.25rem;
+      display: flex; flex-wrap: wrap; gap: 0.5rem;
+      align-items: center; justify-content: space-between;
+    }
+    .brand { font-weight: 700; letter-spacing: -0.01em; }
+    header nav { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+    header nav button { border-color: transparent; background: transparent; }
+    header nav button[aria-current="page"] { background: var(--primary-soft); border-color: var(--primary-soft); }
+
+    main { flex: 1; max-width: 800px; width: 100%; margin: 0 auto; padding: 1.5rem 1rem 7rem; }
+
+    .banner {
+      padding: 0.75rem 1rem; margin-bottom: 1rem; border-radius: var(--radius);
+      border: 1px solid var(--warning-border); background: var(--warning-bg); color: var(--warning-text);
+      font-size: 0.9rem;
+    }
+    .banner.error { border-color: var(--danger); color: var(--danger); background: var(--surface); }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+    .grid-2 > .card { margin: 0; display: flex; flex-direction: column; }
+    .grid-2 > .card .btn-group { margin-top: auto; padding-top: 0.75rem; }
+
+    h1, h2, h3 { margin-bottom: 0.6rem; line-height: 1.25; letter-spacing: -0.01em; }
+    h1 { font-size: 1.6rem; }
+    h2 { font-size: 1.2rem; }
+    h3 { font-size: 1rem; }
+    p { margin-bottom: 0.75rem; }
+    .text-muted { color: var(--text-muted); font-size: 0.9rem; }
+    .pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+    button, .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;
+      background: var(--surface); color: var(--text);
+      border: 1px solid var(--control-border);
+      padding: 0.5rem 0.9rem; border-radius: var(--radius);
+      font-size: 0.95rem; font-weight: 500; font-family: inherit;
+      cursor: pointer; text-decoration: none; min-height: 2.25rem;
+    }
+    button:hover { background: var(--badge-bg); }
+    button.primary { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
+    button.primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+    button.danger { color: var(--danger); border-color: var(--danger); }
+    button.danger:hover { background: var(--danger); color: var(--on-danger); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button.link-btn { border: none; background: transparent; color: var(--primary); text-decoration: underline; padding: 0.25rem 0.4rem; min-height: 0; }
+    button.small { padding: 0.25rem 0.6rem; font-size: 0.85rem; min-height: 1.9rem; }
+    .btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; align-items: center; }
+
+    label { display: block; font-weight: 600; margin-bottom: 0.3rem; font-size: 0.92rem; }
+    textarea, input[type="text"], input[type="number"], input[type="date"], input[type="search"], select {
+      width: 100%; padding: 0.55rem 0.6rem;
+      border: 1px solid var(--control-border); border-radius: var(--radius);
+      background: var(--surface); color: var(--text);
+      font-size: 1rem; font-family: inherit; line-height: 1.5;
+    }
+    input[type="date"] { max-width: 14rem; }
+    textarea { min-height: 96px; resize: vertical; }
+    .field + .field, .field + .rating, .rating + .field { margin-top: 1rem; }
+    .help { font-size: 0.85rem; color: var(--text-muted); margin: -0.15rem 0 0.35rem; }
+
+    .rating { margin: 0.75rem 0; }
+    .slider-paired { display: flex; align-items: center; gap: 1rem; margin-top: 0.25rem; }
+    .slider-paired input[type="range"] { flex: 1; accent-color: var(--primary); min-width: 0; }
+    .slider-paired input[type="number"] { width: 84px; text-align: right; }
+    .rating[data-rated="false"] input[type="range"] { filter: grayscale(1); opacity: 0.7; }
+    .rating-aux { display: flex; align-items: center; width: 6.5rem; flex: none; }
+    .rating-state { font-size: 0.85rem; color: var(--text-muted); }
+
+    .emotion-row { border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem; margin-bottom: 0.75rem; }
+    .emotion-row-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+    .emotion-row .rating { margin: 0.4rem 0 0; }
+    .chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.35rem 0 0.75rem; }
+    .chip { border-radius: 999px; padding: 0.25rem 0.75rem; font-size: 0.88rem; min-height: 2rem; }
+    .custom-add { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.5rem; align-items: end; }
+
+    .hint-box {
+      background: var(--hint-bg); border: 1px solid var(--hint-border); color: var(--hint-text);
+      padding: 0.75rem 1rem; border-radius: var(--radius); margin: 0.75rem 0;
+      display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+    }
+    .hint-box button { background: transparent; border: 1px solid var(--hint-border); color: inherit; }
+
+    .field-error { color: var(--danger); font-weight: 600; font-size: 0.9rem; margin: 0.5rem 0; }
+
+    fieldset { border: none; }
+    legend { font-weight: 600; font-size: 0.92rem; margin-bottom: 0.5rem; }
+    .tag-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.5rem; }
+    .tag-label {
+      display: grid; grid-template-columns: auto 1fr; column-gap: 0.55rem; align-items: start; padding: 0.55rem 0.65rem;
+      border: 1px solid var(--control-border); border-radius: var(--radius);
+      font-size: 0.92rem; font-weight: 600; cursor: pointer; margin: 0;
+    }
+    .tag-label input { margin-top: 0.3rem; }
+    .tag-label .desc { grid-column: 2; font-weight: normal; font-size: 0.82rem; color: var(--text-muted); }
+    .tag-label:hover { background: var(--badge-bg); }
+    .tag-label:has(input:checked) { background: var(--primary-soft); border-color: var(--primary); }
+
+    .wizard-top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+    .progress { height: 4px; background: var(--badge-bg); border-radius: 2px; margin: 0.6rem 0 0.9rem; overflow: hidden; }
+    .progress > span { display: block; height: 100%; background: var(--primary); transition: width 0.2s ease; }
+    .steps-nav { display: flex; gap: 0.25rem; margin: 0.75rem 0; overflow-x: auto; padding: 0.25rem 0.25rem 0.5rem; list-style: none; }
+    .step-dot { padding: 0.2rem 0.55rem; font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; border-color: var(--border); min-height: 1.8rem; }
+    .step-dot.filled { color: var(--text); }
+    .step-dot[aria-current="step"] { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
+    .context { background: var(--surface-2); border-radius: var(--radius); padding: 0.75rem 1rem; margin-bottom: 1rem; font-size: 0.92rem; }
+    .context dt { font-weight: 600; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .context dd { margin: 0 0 0.5rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .context dd:last-child { margin-bottom: 0; }
+    details.questions { margin-top: 1.1rem; border-top: 1px solid var(--border); padding-top: 0.75rem; }
+    details.questions summary { cursor: pointer; font-weight: 600; font-size: 0.92rem; color: var(--primary); }
+    details.questions ul { margin: 0.5rem 0 0 1.25rem; font-size: 0.92rem; }
+    details.questions li + li { margin-top: 0.25rem; }
+    .kbd-tip { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.75rem; text-align: right; }
+    kbd { font-family: inherit; font-size: 0.78rem; border: 1px solid var(--control-border); border-radius: 4px; padding: 0 0.3rem; }
+
+    .badge { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 999px; font-weight: 600; background: var(--badge-bg); color: var(--text); font-size: 0.8rem; }
+    .badge.kind { background: var(--primary-soft); }
+
+    footer.persistent-safety {
+      position: fixed; bottom: 0; left: 0; width: 100%;
+      background: var(--surface); border-top: 1px solid var(--border);
+      padding: 0.7rem 1rem; font-size: 0.9rem; text-align: center; z-index: 100;
+    }
+    footer.persistent-safety a { color: var(--primary); text-decoration: underline; margin-left: 0.25rem; }
+
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; margin: 0.5rem 0 1rem; }
+    th, td { text-align: left; padding: 0.45rem 0.5rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; vertical-align: top; }
+    th { font-weight: 600; color: var(--text-muted); }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+    .journal-item { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+    .journal-item h2, .journal-item h3 { font-size: 1.02rem; margin-bottom: 0.3rem; }
+    .meta-line { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; margin-bottom: 0.35rem; }
+    .filters { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 0.6rem; margin-bottom: 1rem; }
+    .filters label { font-size: 0.8rem; }
+    @media (max-width: 640px) { .filters { grid-template-columns: 1fr 1fr; } .filters .f-search { grid-column: 1 / -1; } }
+
+    .seg { display: inline-flex; border: 1px solid var(--control-border); border-radius: var(--radius); overflow: hidden; margin-bottom: 1rem; }
+    .seg button { border: none; border-radius: 0; }
+    .seg button + button { border-left: 1px solid var(--control-border); }
+    .seg button[aria-pressed="true"] { background: var(--primary); color: var(--on-primary); }
+    .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+    .tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.85rem 1rem; }
+    .tile .t-label { font-size: 0.82rem; color: var(--text-muted); }
+    .tile .t-value { font-size: 1.6rem; font-weight: 600; line-height: 1.2; }
+    .tile .t-note { font-size: 0.78rem; color: var(--text-muted); }
+
+    .viz-wrap { position: relative; }
+    svg.viz { width: 100%; height: auto; display: block; overflow: visible; }
+    svg.viz text { fill: var(--text-muted); font-size: 12px; font-family: inherit; }
+    svg.viz text.v-strong { fill: var(--text); }
+    svg.viz text.ink-light { fill: #ffffff; }
+    svg.viz text.ink-dark { fill: #10161d; }
+    .v-grid { stroke: var(--viz-grid); stroke-width: 1; }
+    .v-axis { stroke: var(--viz-axis); stroke-width: 1; }
+    .v-link { stroke: var(--viz-axis); stroke-width: 2; stroke-linecap: round; }
+    .m-before { fill: var(--viz-before); stroke: var(--surface); stroke-width: 2; }
+    .m-after { fill: var(--viz-after); stroke: var(--surface); stroke-width: 2; }
+    .m-bar { fill: var(--viz-bar); }
+    .hit { fill: transparent; }
+    .hit.on { fill: var(--surface-2); }
+    .h0 { fill: var(--heat-0); } .h1 { fill: var(--heat-1); } .h2 { fill: var(--heat-2); } .h3 { fill: var(--heat-3); }
+    .h4 { fill: var(--heat-4); } .h5 { fill: var(--heat-5); } .h6 { fill: var(--heat-6); }
+    .viz-tip {
+      position: absolute; pointer-events: none; z-index: 5; max-width: 260px;
+      background: var(--surface); color: var(--text); border: 1px solid var(--control-border);
+      border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.82rem; box-shadow: 0 2px 8px rgba(0,0,0,0.12); white-space: pre-line;
+    }
+    .legend { display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+    .legend span { display: inline-flex; align-items: center; gap: 0.35rem; }
+    .swatch { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .swatch.sq { border-radius: 2px; }
+    details.data-table summary { cursor: pointer; font-size: 0.85rem; color: var(--primary); margin-top: 0.5rem; }
+
+    dialog { border: 1px solid var(--control-border); border-radius: var(--radius); background: var(--surface); color: var(--text); padding: 1.25rem; max-width: 30rem; width: calc(100% - 2rem); margin: auto; }
+    dialog::backdrop { background: rgba(15, 23, 42, 0.55); }
+
+    .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 4.5rem; z-index: 150; background: var(--text); color: var(--bg); padding: 0.6rem 1rem; border-radius: var(--radius); font-size: 0.92rem; box-shadow: 0 4px 14px rgba(0,0,0,0.2); }
+
+    .st-pass { color: var(--hint-text); font-weight: 600; }
+    .st-fail { color: var(--danger); font-weight: 600; }
+    .st-skip { color: var(--text-muted); font-weight: 600; }
+    #st-report { width: 100%; min-height: 12rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.8rem; }
+
+    @media print {
+      header, footer.persistent-safety, .no-print, button, .toast, #storage-warning { display: none !important; }
+      body { background: #fff; color: #000; }
+      main { padding: 0; max-width: none; }
+      .card { border-color: #bbb; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header>
+    <div><span class="brand">CBT Workbook</span> <span id="app-mode-badge" class="badge"></span></div>
+    <nav aria-label="Main">
+      <button type="button" data-nav="home">Home</button>
+      <button type="button" data-nav="journal">Journal</button>
+      <button type="button" data-nav="trends">Trends</button>
+      <button type="button" data-nav="interchange">Import / Export</button>
+      <button type="button" data-nav="help">Help</button>
+    </nav>
+  </header>
+
+  <main id="main">
+    <div id="storage-warning" class="banner" role="status" hidden>Entries will not persist: this session is running in memory only (Mode A). Export a backup before closing.</div>
+
+    <!-- Home -->
+    <section id="screen-home" class="screen" aria-labelledby="home-title">
+      <h1 id="home-title" tabindex="-1">Self-reflection workbook</h1>
+      <p>This workbook is a self-reflection tool based on cognitive-behavioral exercises. It is not therapy and is not a substitute for professional care.</p>
+      <div class="grid-2">
+        <div class="card">
+          <h2>Thought record</h2>
+          <p class="text-muted">Slow down a difficult moment: what happened, what you felt and thought, and how else it could be seen. About 10 minutes.</p>
+          <div class="btn-group"><button type="button" class="primary" id="btn-new">New thought record</button></div>
+        </div>
+        <div class="card">
+          <h2>Behavioral experiment</h2>
+          <p class="text-muted">Test a belief in real life: make a prediction, try something, and compare what happens with what you expected.</p>
+          <div class="btn-group"><button type="button" id="btn-new-experiment">Plan an experiment</button></div>
+        </div>
+      </div>
+      <div class="card" id="upnext-card" hidden>
+        <h2>Up next</h2>
+        <div id="upnext-list"></div>
+      </div>
+      <div class="card" id="quick-card">
+        <h2>Quick capture</h2>
+        <p class="text-muted">Just the essentials while it's fresh: the situation, the feeling, the thought. Finish the rest later.</p>
+        <div id="quick-body"></div>
+        <p id="quick-error" class="field-error" role="alert" hidden></p>
+        <div class="btn-group">
+          <button type="button" class="primary" id="btn-quick-save">Save to journal</button>
+          <button type="button" id="btn-quick-continue">Continue in the full record</button>
+        </div>
+      </div>
+      <div class="card" id="drafts-card" hidden>
+        <h2>Unsaved drafts</h2>
+        <p class="text-muted">Drafts are kept separately and are not in your journal or exports until you save them.</p>
+        <div id="drafts-list"></div>
+      </div>
+    </section>
+
+    <!-- Wizard (shared by every exercise) -->
+    <section id="screen-wizard" class="screen" aria-labelledby="step-title" hidden>
+      <div class="wizard-top">
+        <p class="text-muted" style="margin:0;"><span id="wizard-kind"></span> · <span id="wizard-progress" aria-live="polite">Step 1 of 9</span></p>
+        <button type="button" id="btn-close-wizard">Close</button>
+      </div>
+      <div class="progress" aria-hidden="true"><span id="wizard-bar" style="width:0"></span></div>
+      <h1 id="step-title" tabindex="-1">Situation</h1>
+      <p id="step-prompt" class="text-muted"></p>
+      <nav aria-label="Steps"><ol class="steps-nav" id="step-jump-nav"></ol></nav>
+      <div id="rule-hint-box" class="hint-box" aria-live="polite" hidden>
+        <span id="rule-hint-text"></span>
+        <button type="button" class="small" id="btn-dismiss-hint">Dismiss</button>
+      </div>
+      <div class="card">
+        <div id="wizard-body"></div>
+        <p id="wizard-error" class="field-error" role="alert" hidden></p>
+      </div>
+      <div class="btn-group" style="justify-content: space-between;">
+        <button type="button" id="wizard-btn-prev">Back</button>
+        <div style="display:flex; gap:0.5rem;">
+          <button type="button" id="wizard-btn-save" disabled>Save</button>
+          <button type="button" id="wizard-btn-next" class="primary">Next</button>
+        </div>
+      </div>
+      <p class="kbd-tip"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> next step · <kbd>Ctrl</kbd>+<kbd>S</kbd> save</p>
+    </section>
+
+    <!-- Journal -->
+    <section id="screen-journal" class="screen" aria-labelledby="journal-title" hidden>
+      <h1 id="journal-title" tabindex="-1">Journal</h1>
+      <div class="card">
+        <h2>Summary</h2>
+        <p id="journal-summary-text" class="text-muted"></p>
+        <p id="journal-patterns-summary" class="text-muted" style="margin:0;"></p>
+      </div>
+      <div class="filters" role="search">
+        <div class="f-search"><label for="flt-q">Search</label><input type="search" id="flt-q" autocomplete="off"></div>
+        <div><label for="flt-type">Exercise</label><select id="flt-type"><option value="all">All</option><option value="thought-record">Thought records</option><option value="behavioral-experiment">Experiments</option></select></div>
+        <div><label for="flt-status">Status</label><select id="flt-status"><option value="all">All</option><option value="complete">Complete</option><option value="partial">In progress</option></select></div>
+        <div><label for="flt-pattern">Thinking pattern</label><select id="flt-pattern"></select></div>
+      </div>
+      <p id="journal-count" class="text-muted" aria-live="polite"></p>
+      <div id="journal-list"></div>
+    </section>
+
+    <!-- Entry view -->
+    <section id="screen-entry" class="screen" aria-labelledby="entry-title" hidden>
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;">
+        <button type="button" id="btn-entry-back">Back to journal</button>
+        <div class="btn-group" style="margin:0;">
+          <button type="button" class="primary" id="btn-entry-continue" hidden>Continue</button>
+          <button type="button" id="btn-entry-experiment" hidden>Test it with an experiment</button>
+          <button type="button" id="btn-entry-edit">Edit</button>
+          <button type="button" id="btn-entry-print">Print</button>
+          <button type="button" class="danger" id="btn-entry-delete">Delete</button>
+        </div>
+      </div>
+      <h1 id="entry-title" tabindex="-1" style="margin-top:1rem;">Entry</h1>
+      <div id="entry-detail"></div>
+    </section>
+
+    <!-- Trends -->
+    <section id="screen-trends" class="screen" aria-labelledby="trends-title" hidden>
+      <h1 id="trends-title" tabindex="-1">Trends</h1>
+      <p class="text-muted">Patterns across your entries. These are your own ratings, shown as they are: a change in a rating is information, not a grade.</p>
+      <div class="seg" role="group" aria-label="Time range" id="trend-range">
+        <button type="button" data-range="all">All time</button>
+        <button type="button" data-range="90">Last 90 days</button>
+        <button type="button" data-range="30">Last 30 days</button>
+      </div>
+      <div id="trends-body"></div>
+    </section>
+
+    <!-- Import / Export -->
+    <section id="screen-interchange" class="screen" aria-labelledby="interchange-title" hidden>
+      <h1 id="interchange-title" tabindex="-1">Import and export</h1>
+      <div class="card">
+        <h2>Storage status</h2>
+        <p>Storage: <strong id="storage-engine-label"></strong></p>
+        <p>Persistent storage: <strong id="persist-status-label"></strong></p>
+        <p>Last JSON export: <strong id="last-export-label">Never</strong></p>
+        <div id="export-reminder" class="banner" hidden>Your last JSON export was more than 14 days ago, or you haven't exported yet. Browser storage can be cleared without notice, so export a backup now.</div>
+      </div>
+      <div class="card">
+        <h2>Export</h2>
+        <p class="text-muted">Downloads a file to this computer. Nothing is sent over the network. The JSON backup holds everything; the CSV files are for spreadsheets.</p>
+        <div class="btn-group">
+          <button type="button" class="primary" id="btn-export-json">Export JSON backup</button>
+          <button type="button" id="btn-export-csv">Thought records CSV</button>
+          <button type="button" id="btn-export-csv-be">Experiments CSV</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Import</h2>
+        <p class="text-muted">Merges a JSON backup into your journal by entry ID. A newer version of an entry replaces the stored one. Import never deletes anything. Backups from earlier versions of this workbook are supported.</p>
+        <label for="import-file">Choose a JSON backup file</label>
+        <input type="file" id="import-file" accept=".json,application/json">
+        <div id="import-summary" class="banner" role="status" style="margin-top:1rem;" hidden></div>
+      </div>
+    </section>
+
+    <!-- Help -->
+    <section id="screen-help" class="screen" aria-labelledby="help-title" hidden>
+      <h1 id="help-title" tabindex="-1">Help and crisis contacts</h1>
+      <div class="card" style="border-left: 4px solid var(--danger);">
+        <h2>If you're in crisis</h2>
+        <p>If you're overwhelmed, thinking about harming yourself, or need support right now, reach out now.</p>
+        <ul id="crisis-contacts-list" style="margin-left: 1.5rem;"></ul>
+      </div>
+      <div class="btn-group" style="margin-bottom:1rem;">
+        <button type="button" class="primary" id="btn-help-return" hidden>Back to your exercise</button>
+        <button type="button" data-nav="home">Home</button>
+      </div>
+      <div class="card">
+        <h2>About the exercises</h2>
+        <h3>Thought record</h3>
+        <p>A structured way to slow down a moment that stirred up strong feelings. You write down the situation, the emotions and the thought behind them, then look at what supports and doesn't support the thought, and write a more complete version. Re-rating at the end shows whether anything shifted for you.</p>
+        <h3>Behavioral experiment</h3>
+        <p>A way to test a belief by acting on it. You write a specific prediction, plan a small experiment, try it, and compare what happened with what you expected. You can start one from any thought record with “Test it with an experiment”.</p>
+        <h3>Your data</h3>
+        <p>Everything stays in this browser on this computer. Export a JSON backup regularly from Import / Export: browser storage can be cleared without warning.</p>
+      </div>
+    </section>
+
+    <!-- Developer screen: open the file with #selftest -->
+    <section id="screen-selftest" class="screen" aria-labelledby="selftest-title" hidden>
+      <h1 id="selftest-title" tabindex="-1">Self-test</h1>
+      <p class="text-muted">Runs against an in-memory journal and a temporary IndexedDB database. Your journal is not read or changed.</p>
+      <p id="st-summary" aria-live="polite">Running…</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th scope="col">Check</th><th scope="col">Result</th><th scope="col">Detail</th></tr></thead>
+        <tbody id="st-rows"></tbody>
+      </table></div>
+      <label for="st-report">Plain-text report (copy into the spec's Verified column)</label>
+      <textarea id="st-report" readonly></textarea>
+      <div class="btn-group"><button type="button" id="btn-st-rerun">Run again</button><button type="button" data-nav="home">Exit self-test</button></div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <footer class="persistent-safety">
+    If you're in crisis or thinking about harming yourself, stop and reach out now. US: call or text 988.
+    <a href="#" id="footer-help">Help and crisis contacts</a>
+  </footer>
+
+  <dialog id="choice-dialog" aria-labelledby="choice-title" aria-describedby="choice-msg">
+    <h2 id="choice-title"></h2>
+    <p id="choice-msg"></p>
+    <div class="btn-group" id="choice-buttons"></div>
+  </dialog>
+
+  <script>
+  "use strict";
+
+  /* =========================================================
+   * CONFIG
+   * ========================================================= */
+  // Size of the file as loaded, before any screen renders (checked against the 150 KB budget by #selftest).
+  const BOOT_BYTES = new Blob(["<!DOCTYPE html>\n" + document.documentElement.outerHTML]).size;
+  const APP_VERSION = "1.1.0";          // SemVer 2.0.0
+  const FORMAT_VERSION = 1;             // canonical JSON format (spec §3). 1.1 changes are additive only.
+  const DB_NAME = "cbtworkbook";        // spec §6
+  const DB_VERSION = 1;                 // bump together with FORMAT_VERSION (runs migrations in onupgradeneeded)
+  const IDB_OPEN_TIMEOUT_MS = 2500;
+  const EXPORT_REMINDER_DAYS = 14;
+
+  // Spec §8 S2: crisis contacts come from this one object.
+  const CRISIS_CONFIG = [
+    { name: "988 Suicide & Crisis Lifeline", detail: "Call or text 988 (US, 24/7)" },
+    { name: "Crisis Text Line", detail: "Text HOME to 741741 (US)" },
+    { name: "Emergency services", detail: "Call 911 or go to the nearest emergency department" },
+    { name: "A trusted person", detail: "Reach out to a friend, family member, or your healthcare provider" }
+  ];
+
+  const PRESET_EMOTIONS = ["anxiety", "sadness", "anger", "shame", "guilt", "frustration", "fear", "disappointment", "embarrassment", "hurt"];
+
+  // Slugs are append-only (spec §3 rule 4). Labels and descriptions are display-only.
+  const PATTERN_OPTIONS = [
+    { slug: "catastrophizing", label: "Catastrophizing", desc: "Jumping to the worst possible outcome" },
+    { slug: "fortune-telling", label: "Predicting the future", desc: "Treating a guess about what will happen as a fact" },
+    { slug: "mind-reading", label: "Mind reading", desc: "Assuming you know what someone else is thinking" },
+    { slug: "all-or-nothing", label: "All-or-nothing thinking", desc: "Seeing things in only two categories" },
+    { slug: "overgeneralization", label: "Overgeneralization", desc: "Drawing a broad rule from a single event" },
+    { slug: "emotional-reasoning", label: "Emotional reasoning", desc: "Taking a feeling as proof that something is true" },
+    { slug: "should-statements", label: "Should / must thinking", desc: "Rigid rules about how you or others must act" },
+    { slug: "personalization", label: "Personalization", desc: "Taking on blame for things outside your control" },
+    { slug: "discounting-positives", label: "Discounting the positive", desc: "Treating good things as if they don't count" },
+    { slug: "labeling", label: "Labeling", desc: "Summing up a whole person with one word" },
+    { slug: "other", label: "Other", desc: "Something not on this list" },
+    { slug: "unsure", label: "Unsure", desc: "Not sure yet, and that's fine" }
+  ];
+  const PATTERN_LABELS = Object.fromEntries(PATTERN_OPTIONS.map(p => [p.slug, p.label]));
+  const patternLabel = (slug) => PATTERN_LABELS[slug] || slug;
+
+  /* =========================================================
+   * SMALL UTILITIES
+   * ========================================================= */
+  const isBlank = (v) => v === null || v === undefined || String(v).trim() === "";
+  const clone = (v) => JSON.parse(JSON.stringify(v));
+  const clampInt = (n) => Math.min(100, Math.max(0, Math.round(Number(n))));
+  const cap = (s) => s ? s[0].toUpperCase() + s.slice(1) : s;
+  const trunc = (s, n) => (s || "").length > n ? s.slice(0, n) + "…" : (s || "");
+  const $ = (id) => document.getElementById(id);
+  const getPath = (o, p) => p.split(".").reduce((a, k) => (a === null || a === undefined) ? undefined : a[k], o);
+  function setPath(o, p, v) { const ks = p.split("."); let t = o; for (let i = 0; i < ks.length - 1; i++) t = t[ks[i]]; t[ks[ks.length - 1]] = v; }
+
+  function el(tag, attrs, ...kids) {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs || {})) {
+      if (v === null || v === undefined || v === false) continue;
+      if (k === "class") n.className = v;
+      else if (k === "hidden") n.hidden = true;
+      else if (k.startsWith("on") && typeof v === "function") n.addEventListener(k.slice(2), v);
+      else n.setAttribute(k, v === true ? "" : String(v));
+    }
+    for (const c of kids.flat()) {
+      if (c === null || c === undefined || c === false) continue;
+      n.append(c instanceof Node ? c : document.createTextNode(String(c)));
+    }
+    return n;
+  }
+  // replaceChildren() would print null/undefined as text; drop empty children and flatten.
+  const fill = (node, ...kids) => node.replaceChildren(...kids.flat(Infinity).filter(k => k !== null && k !== undefined && k !== false));
+  const SVGNS = "http://www.w3.org/2000/svg";
+  function svg(tag, attrs, ...kids) {
+    const n = document.createElementNS(SVGNS, tag);
+    for (const [k, v] of Object.entries(attrs || {})) if (v !== null && v !== undefined) n.setAttribute(k, String(v));
+    for (const c of kids.flat()) if (c !== null && c !== undefined) n.append(c instanceof Node ? c : document.createTextNode(String(c)));
+    return n;
+  }
+
+  /* ---------- ULID (Crockford base32, 48-bit time + 80-bit random) ---------- */
+  const ULID_ENCODING = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+  const ULID_RE = /^[0-7][0-9A-HJKMNP-TV-Z]{25}$/;
+  function generateULID(now = Date.now()) {
+    let t = now, time = "";
+    for (let i = 0; i < 10; i++) { time = ULID_ENCODING[t % 32] + time; t = Math.floor(t / 32); }
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    let rand = "";
+    for (let i = 0; i < 16; i++) rand += ULID_ENCODING[bytes[i] % 32]; // 256 % 32 === 0: unbiased
+    return time + rand;
+  }
+
+  /* ---------- RFC 3339 with local offset ---------- */
+  const RFC3339_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,9})?(Z|[+-]\d{2}:\d{2})$/;
+  const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+  function nowRFC3339(d = new Date()) {
+    const pad = (n) => String(Math.floor(Math.abs(n))).padStart(2, "0");
+    const off = -d.getTimezoneOffset();
+    const sign = off >= 0 ? "+" : "-";
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}${sign}${pad(off / 60)}:${pad(off % 60)}`;
+  }
+  const isRFC3339 = (s) => typeof s === "string" && RFC3339_RE.test(s) && !Number.isNaN(Date.parse(s));
+  function localDateStamp(d = new Date()) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+  // Wall-clock time as recorded (the stored offset is kept), so time of day stays meaningful (spec §3).
+  function recordedParts(ts) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2})/.exec(ts || "");
+    if (!m) return null;
+    const wd = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])).getUTCDay();
+    return { weekday: (wd + 6) % 7, hour: +m[4] }; // weekday: 0 = Monday
+  }
+  const fmtDateTime = (ts) => new Date(ts).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+  const fmtDate = (ts) => new Date(ts).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+  const fmtPlainDate = (ymd) => { const [y, m, d] = ymd.split("-").map(Number); return new Date(y, m - 1, d).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }); };
+
+  /* =========================================================
+   * CANONICAL ENTRY SHAPES (spec §3)
+   * Two exercises share one `entries` list, told apart by `exercise`.
+   * ========================================================= */
+  const TR_KEYS = ["id", "exercise", "status", "createdAt", "updatedAt", "situation", "emotions", "automaticThought", "behavior", "thinkingPatterns", "evidenceFor", "evidenceAgainst", "alternativePerspective", "nextAction", "underlyingBelief"];
+  const BE_KEYS = ["id", "exercise", "status", "createdAt", "updatedAt", "linkedEntryId", "belief", "prediction", "plan", "plannedFor", "safetyBehaviors", "alternativeBelief", "outcome", "learning", "nextStep"];
+  const EMOTION_KEYS = ["name", "before", "after"];
+  const THOUGHT_KEYS = ["text", "beliefBefore", "beliefAfter"];
+  const BEHAVIOR_KEYS = ["urge", "action"];
+  const BELIEF_KEYS = ["text", "ratingBefore", "ratingAfter"];
+  const TR_TEXT = ["situation", "evidenceFor", "evidenceAgainst", "alternativePerspective", "nextAction", "underlyingBelief"];
+  const BE_TEXT = ["prediction", "plan", "safetyBehaviors", "outcome", "learning", "nextStep"];
+  // Optional fields added after formatVersion 1 shipped (spec §3 rule 1: no version bump).
+  // Older files lack them; readers fill the default before validating.
+  const ADDITIVE_DEFAULTS = { "thought-record": { underlyingBelief: null }, "behavioral-experiment": {} };
+  const EXERCISE_KEYS = { "thought-record": TR_KEYS, "behavioral-experiment": BE_KEYS };
+
+  function withAdditiveDefaults(e) {
+    if (!e || typeof e !== "object" || Array.isArray(e)) return e;
+    const defs = ADDITIVE_DEFAULTS[e.exercise];
+    if (!defs) return e;
+    let out = e;
+    for (const [k, v] of Object.entries(defs)) if (!(k in e)) { if (out === e) out = { ...e }; out[k] = v; }
+    return out;
+  }
+
+  // Known keys first in spec order, then unknown keys in their original order (rule 1: preserve on re-export).
+  function ordered(obj, keys) {
+    if (!obj || typeof obj !== "object" || Array.isArray(obj)) return obj;
+    const out = {};
+    for (const k of keys) if (k in obj) out[k] = obj[k];
+    for (const k of Object.keys(obj)) if (!keys.includes(k)) out[k] = obj[k];
+    return out;
+  }
+  function canonicalOrder(e) {
+    if (e && e.exercise === "behavioral-experiment") {
+      const o = ordered(e, BE_KEYS);
+      o.belief = ordered(o.belief, BELIEF_KEYS);
+      o.alternativeBelief = ordered(o.alternativeBelief, BELIEF_KEYS);
+      return o;
+    }
+    const o = ordered(e, TR_KEYS);
+    if (Array.isArray(o.emotions)) o.emotions = o.emotions.map(x => ordered(x, EMOTION_KEYS));
+    o.automaticThought = ordered(o.automaticThought, THOUGHT_KEYS);
+    o.behavior = ordered(o.behavior, BEHAVIOR_KEYS);
+    return o;
+  }
+
+  function createBlankEntry() {
+    const now = nowRFC3339();
+    return {
+      id: generateULID(), exercise: "thought-record", status: "partial",
+      createdAt: now, updatedAt: now,
+      situation: null, emotions: [],
+      automaticThought: { text: null, beliefBefore: null, beliefAfter: null },
+      behavior: { urge: null, action: null },
+      thinkingPatterns: [],
+      evidenceFor: null, evidenceAgainst: null, alternativePerspective: null, nextAction: null,
+      underlyingBelief: null
+    };
+  }
+  function createBlankExperiment(linked = null) {
+    const now = nowRFC3339();
+    return {
+      id: generateULID(), exercise: "behavioral-experiment", status: "partial",
+      createdAt: now, updatedAt: now, linkedEntryId: linked,
+      belief: { text: null, ratingBefore: null, ratingAfter: null },
+      prediction: null, plan: null, plannedFor: null, safetyBehaviors: null,
+      alternativeBelief: { text: null, ratingBefore: null, ratingAfter: null },
+      outcome: null, learning: null, nextStep: null
+    };
+  }
+
+  const textOrNull = (v) => (typeof v === "string" ? (v.trim() === "" ? null : v) : (v === undefined ? null : v));
+  const ratingOrNull = (v) => (v === undefined || v === "" ? null : v);
+  const objOr = (v) => (v && typeof v === "object" && !Array.isArray(v)) ? v : {};
+
+  // Fills every field (all always present), turns blank text into null. Keeps unknown fields.
+  // Never invents a rating: an unrated value stays null (spec §2).
+  function normalizeEntry(src) {
+    const e = { ...src };
+    if (e.exercise === undefined) e.exercise = "thought-record";
+    if (e.status === undefined) e.status = "partial";
+    if (e.exercise === "behavioral-experiment") {
+      for (const k of BE_TEXT) e[k] = textOrNull(e[k]);
+      e.plannedFor = isBlank(e.plannedFor) ? null : e.plannedFor;
+      e.linkedEntryId = isBlank(e.linkedEntryId) ? null : e.linkedEntryId;
+      for (const k of ["belief", "alternativeBelief"]) {
+        const b = objOr(e[k]);
+        e[k] = { ...b, text: textOrNull(b.text), ratingBefore: ratingOrNull(b.ratingBefore), ratingAfter: ratingOrNull(b.ratingAfter) };
+      }
+      return canonicalOrder(e);
+    }
+    for (const k of TR_TEXT) e[k] = textOrNull(e[k]);
+    e.emotions = e.emotions === undefined || e.emotions === null ? [] :
+      (Array.isArray(e.emotions) ? e.emotions.map(m => (m && typeof m === "object") ? { ...m, name: textOrNull(m.name), before: ratingOrNull(m.before), after: ratingOrNull(m.after) } : m) : e.emotions);
+    const at = objOr(e.automaticThought);
+    e.automaticThought = { ...at, text: textOrNull(at.text), beliefBefore: ratingOrNull(at.beliefBefore), beliefAfter: ratingOrNull(at.beliefAfter) };
+    const b = objOr(e.behavior);
+    e.behavior = { ...b, urge: textOrNull(b.urge), action: textOrNull(b.action) };
+    e.thinkingPatterns = e.thinkingPatterns === undefined || e.thinkingPatterns === null ? [] : e.thinkingPatterns;
+    return canonicalOrder(e);
+  }
+
+  /* ---------- Validation (spec §7 step 3) ---------- */
+  const SLUG_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+  const isRating = (v) => Number.isInteger(v) && v >= 0 && v <= 100;
+  const isTextOrNull = (v) => v === null || typeof v === "string";
+  const has = (o, k) => !!o && Object.prototype.hasOwnProperty.call(o, k);
+
+  function validateEntry(e) {
+    const errs = [];
+    const bad = (field, message) => errs.push({ field, message });
+    const keys = EXERCISE_KEYS[e && e.exercise];
+    if (!keys) { bad("exercise", `unknown exercise type ${JSON.stringify(e && e.exercise)}`); return errs; }
+    for (const k of keys) if (!has(e, k)) bad(k, "missing (every field must be present; use null or [])");
+    if (errs.length) return errs;
+
+    if (typeof e.id !== "string" || !ULID_RE.test(e.id)) bad("id", "not a valid ULID");
+    if (e.status !== "partial" && e.status !== "complete") bad("status", "must be \"partial\" or \"complete\"");
+    if (!isRFC3339(e.createdAt)) bad("createdAt", "not an RFC 3339 timestamp");
+    if (!isRFC3339(e.updatedAt)) bad("updatedAt", "not an RFC 3339 timestamp");
+    const reqText = (v, f) => { if (typeof v !== "string" || isBlank(v)) bad(f, "required text"); };
+    const optText = (v, f) => { if (!isTextOrNull(v)) bad(f, "must be text or null"); };
+    const optRating = (v, f) => { if (v !== null && !isRating(v)) bad(f, "must be an integer 0–100 or null"); };
+    const reqRating = (v, f) => { if (!isRating(v)) bad(f, "must be an integer 0–100"); };
+    const object = (o, f, ks) => {
+      if (!o || typeof o !== "object" || Array.isArray(o)) { bad(f, "must be an object"); return false; }
+      for (const k of ks) if (!has(o, k)) bad(`${f}.${k}`, "missing");
+      return true;
+    };
+
+    if (e.exercise === "behavioral-experiment") {
+      if (e.linkedEntryId !== null && (typeof e.linkedEntryId !== "string" || !ULID_RE.test(e.linkedEntryId))) bad("linkedEntryId", "must be a ULID or null");
+      if (object(e.belief, "belief", BELIEF_KEYS)) {
+        reqText(e.belief.text, "belief.text"); reqRating(e.belief.ratingBefore, "belief.ratingBefore"); optRating(e.belief.ratingAfter, "belief.ratingAfter");
+      }
+      reqText(e.prediction, "prediction"); reqText(e.plan, "plan");
+      if (e.plannedFor !== null && (typeof e.plannedFor !== "string" || !DATE_RE.test(e.plannedFor))) bad("plannedFor", "must be a YYYY-MM-DD date or null");
+      if (object(e.alternativeBelief, "alternativeBelief", BELIEF_KEYS)) {
+        optText(e.alternativeBelief.text, "alternativeBelief.text"); optRating(e.alternativeBelief.ratingBefore, "alternativeBelief.ratingBefore"); optRating(e.alternativeBelief.ratingAfter, "alternativeBelief.ratingAfter");
+      }
+      for (const k of ["safetyBehaviors", "outcome", "learning", "nextStep"]) optText(e[k], k);
+      return errs;
+    }
+
+    reqText(e.situation, "situation");
+    if (!Array.isArray(e.emotions)) bad("emotions", "must be a list");
+    else {
+      if (e.emotions.length < 1) bad("emotions", "at least one emotion is required");
+      const seen = new Set();
+      e.emotions.forEach((m, i) => {
+        const f = `emotions[${i}]`;
+        if (!object(m, f, EMOTION_KEYS)) return;
+        if (typeof m.name !== "string" || isBlank(m.name)) bad(`${f}.name`, "required text");
+        else { const key = m.name.trim().toLowerCase(); if (seen.has(key)) bad(`${f}.name`, `duplicate emotion "${m.name}"`); seen.add(key); }
+        reqRating(m.before, `${f}.before`); optRating(m.after, `${f}.after`);
+      });
+    }
+    if (object(e.automaticThought, "automaticThought", THOUGHT_KEYS)) {
+      reqText(e.automaticThought.text, "automaticThought.text");
+      reqRating(e.automaticThought.beliefBefore, "automaticThought.beliefBefore");
+      optRating(e.automaticThought.beliefAfter, "automaticThought.beliefAfter");
+    }
+    if (object(e.behavior, "behavior", BEHAVIOR_KEYS)) { optText(e.behavior.urge, "behavior.urge"); optText(e.behavior.action, "behavior.action"); }
+    if (!Array.isArray(e.thinkingPatterns)) bad("thinkingPatterns", "must be a list");
+    else {
+      if (e.thinkingPatterns.some(s => typeof s !== "string" || !SLUG_RE.test(s))) bad("thinkingPatterns", "each item must be a lowercase slug");
+      if (new Set(e.thinkingPatterns).size !== e.thinkingPatterns.length) bad("thinkingPatterns", "duplicate slug");
+    }
+    for (const k of ["evidenceFor", "evidenceAgainst", "alternativePerspective", "nextAction", "underlyingBelief"]) optText(e[k], k);
+    return errs;
+  }
+
+  /* ---------- Migrations (spec §3 rules 2–3) ----------
+   * MIGRATIONS[N] upgrades an array of entries from formatVersion N to N+1.
+   * formatVersion 0 is a synthetic pre-release shape used to exercise the chain (M3):
+   * flat `thought` / `beliefBefore` / `beliefAfter`, blanks as "", fields may be absent.
+   */
+  function migrate_0_to_1(entries) {
+    return entries.map(e => {
+      if (!e || typeof e !== "object" || Array.isArray(e)) return e;
+      const { thought, beliefBefore, beliefAfter, ...rest } = e;
+      if (!rest.automaticThought) rest.automaticThought = { text: thought ?? null, beliefBefore: beliefBefore ?? null, beliefAfter: beliefAfter ?? null };
+      return normalizeEntry(rest);
+    });
+  }
+  const MIGRATIONS = { 0: migrate_0_to_1 };
+
+  function migrateEntries(entries, fromVersion) {
+    let out = entries;
+    for (let v = fromVersion; v < FORMAT_VERSION; v++) {
+      const fn = MIGRATIONS[v];
+      if (!fn) throw new Error(`No migration from formatVersion ${v} to ${v + 1}.`);
+      out = fn(out);
+    }
+    return out;
+  }
+
+  /* ---------- Prompt rules (spec §5) ----------
+   * Deterministic, stateless, question-only. They never label, score or diagnose,
+   * and never infer anything from free text (only presence, length and ratings).
+   */
+  const pats = (e) => e.thinkingPatterns || [];
+  const PROMPT_RULES = [
+    { id: "R1", exercise: "thought-record", step: 7, when: (e) => (e.automaticThought?.beliefBefore ?? -1) >= 80 && isBlank(e.evidenceAgainst), prompt: "What might you be overlooking? What would a friend point out?" },
+    { id: "R2", exercise: "thought-record", step: 7, when: (e) => !isBlank(e.evidenceFor) && isBlank(e.evidenceAgainst), prompt: "Is there anything that doesn't fit the thought?" },
+    { id: "R3", exercise: "thought-record", step: 8, when: (e) => pats(e).includes("mind-reading"), prompt: "What else could the other person be thinking?" },
+    { id: "R4", exercise: "thought-record", step: 8, when: (e) => pats(e).includes("catastrophizing") || pats(e).includes("fortune-telling"), prompt: "What's the most likely outcome, not just the worst?" },
+    { id: "R5", exercise: "thought-record", step: 8, when: (e) => pats(e).includes("should-statements"), prompt: "What would a more flexible version of this rule sound like?" },
+    { id: "R6", exercise: "thought-record", step: 8, when: (e) => pats(e).includes("all-or-nothing"), prompt: "Is there a middle ground between the two extremes?" },
+    { id: "R7", exercise: "thought-record", step: 1, when: (e) => typeof e.situation === "string" && [...e.situation].length > 400, prompt: "Try describing only what a camera would record." },
+    { id: "R8", exercise: "thought-record", step: 3, when: (e) => (e.automaticThought?.beliefBefore ?? -1) >= 70 && isBlank(e.underlyingBelief), prompt: "If this thought were true, what would it mean about you?" },
+    { id: "R9", exercise: "thought-record", step: 8, when: (e) => pats(e).includes("emotional-reasoning"), prompt: "If you felt calm, would the situation look the same?" },
+    { id: "R10", exercise: "thought-record", step: 8, when: (e) => pats(e).includes("labeling"), prompt: "How would you describe what happened without using a label?" },
+    { id: "R11", exercise: "thought-record", step: 8, when: (e) => pats(e).includes("personalization"), prompt: "What other people or circumstances played a part?" },
+    { id: "R12", exercise: "thought-record", step: 8, when: (e) => pats(e).includes("overgeneralization"), prompt: "Can you think of times this didn't happen?" },
+    { id: "R13", exercise: "thought-record", step: 8, when: (e) => pats(e).includes("discounting-positives"), prompt: "If a friend had done what you did, would you count it?" },
+    { id: "R14", exercise: "thought-record", step: 9, when: (e) => (e.automaticThought?.beliefAfter ?? -1) >= 60, prompt: "Could a behavioral experiment help you test this thought in real life?" },
+    { id: "E1", exercise: "behavioral-experiment", step: 3, when: (e) => !isBlank(e.plan) && isBlank(e.plannedFor), prompt: "Which day could you try this?" },
+    { id: "E2", exercise: "behavioral-experiment", step: 4, when: (e) => isBlank(e.safetyBehaviors), prompt: "What do you usually do to make this feel safer, and could you drop it this time?" },
+    { id: "E3", exercise: "behavioral-experiment", step: 5, when: (e) => (e.belief?.ratingBefore ?? -1) >= 80 && isBlank(e.alternativeBelief?.text), prompt: "If the belief turned out to be wrong, what would that look like?" },
+    { id: "E4", exercise: "behavioral-experiment", step: 7, when: (e) => isRating(e.belief?.ratingBefore) && e.belief?.ratingAfter === e.belief?.ratingBefore, prompt: "Did anything happen that the belief didn't predict?" }
+  ];
+
+  /* ---------- Deltas: computed on read, never stored (spec §5) ---------- */
+  const computeDelta = (before, after) => (isRating(before) && isRating(after)) ? after - before : null;
+  const formatDelta = (d) => d === null ? "—" : (d > 0 ? `+${d}` : d < 0 ? `−${Math.abs(d)}` : "0");
+  const median = (a) => { if (!a.length) return null; const s = [...a].sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : Math.round((s[m - 1] + s[m]) / 2); };
+  const beliefOf = (e) => e.exercise === "behavioral-experiment"
+    ? { text: e.belief?.text, before: e.belief?.ratingBefore, after: e.belief?.ratingAfter }
+    : { text: e.automaticThought?.text, before: e.automaticThought?.beliefBefore, after: e.automaticThought?.beliefAfter };
+
+  /* =========================================================
+   * STORAGE BACKENDS + JOURNAL API (spec §6)
+   * ========================================================= */
+  function createMemoryBackend() {
+    const stores = { entries: new Map(), drafts: new Map(), meta: new Map() };
+    const keyOf = (store, v) => store === "meta" ? v.key : v.id;
+    return {
+      mode: "memory",
+      async get(store, key) { const v = stores[store].get(key); return v === undefined ? undefined : clone(v); },
+      async getAll(store) { return Array.from(stores[store].values()).map(clone); },
+      async put(store, value) { stores[store].set(keyOf(store, value), clone(value)); },
+      async delete(store, key) { return stores[store].delete(key); },
+      async mergeBatch(items, decide) {
+        return items.map(item => {
+          const ex = stores.entries.get(item.id);
+          const outcome = decide(item, ex === undefined ? null : ex);
+          if (outcome !== "skipped") stores.entries.set(item.id, clone(item));
+          return outcome;
+        });
+      },
+      close() {}
+    };
+  }
+
+  function upgradeDb(db, tx, oldVersion) {
+    if (!db.objectStoreNames.contains("entries")) {
+      const s = db.createObjectStore("entries", { keyPath: "id" });
+      s.createIndex("createdAt", "createdAt");
+    }
+    if (!db.objectStoreNames.contains("drafts")) db.createObjectStore("drafts", { keyPath: "id" });
+    if (!db.objectStoreNames.contains("meta")) db.createObjectStore("meta", { keyPath: "key" });
+    const meta = tx.objectStore("meta");
+    const g = meta.get("formatVersion");
+    g.onsuccess = () => {
+      const stored = g.result ? g.result.value : FORMAT_VERSION; // brand-new database: already current
+      if (oldVersion > 0 && stored < FORMAT_VERSION) {
+        const cur = tx.objectStore("entries").openCursor();
+        cur.onsuccess = () => {
+          const c = cur.result;
+          if (!c) return;
+          c.update(migrateEntries([c.value], stored)[0]);
+          c.continue();
+        };
+      }
+      if (stored <= FORMAT_VERSION) meta.put({ key: "formatVersion", value: FORMAT_VERSION });
+    };
+  }
+
+  function openIdb(name, timeoutMs = IDB_OPEN_TIMEOUT_MS) {
+    return new Promise((resolve, reject) => {
+      if (typeof indexedDB === "undefined" || !indexedDB) { reject(new Error("IndexedDB is not available")); return; }
+      let settled = false;
+      const finish = (fn, v) => { if (!settled) { settled = true; clearTimeout(timer); fn(v); } };
+      const timer = setTimeout(() => finish(reject, new Error(`IndexedDB did not open within ${timeoutMs} ms`)), timeoutMs);
+      let req;
+      try { req = indexedDB.open(name, DB_VERSION); } catch (err) { finish(reject, err); return; }
+      req.onupgradeneeded = (e) => upgradeDb(req.result, req.transaction, e.oldVersion);
+      req.onsuccess = () => {
+        const db = req.result;
+        if (settled) { db.close(); return; }
+        db.onversionchange = () => db.close();
+        finish(resolve, db);
+      };
+      req.onerror = () => finish(reject, req.error || new Error("IndexedDB open failed"));
+      req.onblocked = () => finish(reject, new Error("IndexedDB upgrade blocked by another open copy of this file"));
+    });
+  }
+
+  function createIdbBackend(db) {
+    const done = (tx) => new Promise((res, rej) => {
+      tx.oncomplete = () => res();
+      tx.onerror = () => rej(tx.error);
+      tx.onabort = () => rej(tx.error || new Error("Transaction aborted"));
+    });
+    return {
+      mode: "indexeddb",
+      get(store, key) {
+        return new Promise((res, rej) => {
+          const r = db.transaction(store, "readonly").objectStore(store).get(key);
+          r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+        });
+      },
+      getAll(store) {
+        return new Promise((res, rej) => {
+          const r = db.transaction(store, "readonly").objectStore(store).getAll();
+          r.onsuccess = () => res(r.result || []); r.onerror = () => rej(r.error);
+        });
+      },
+      async put(store, value) {
+        const tx = db.transaction(store, "readwrite");
+        tx.objectStore(store).put(value);
+        await done(tx);
+      },
+      async delete(store, key) {
+        const tx = db.transaction(store, "readwrite");
+        const s = tx.objectStore(store);
+        let found = false;
+        const g = s.get(key);
+        g.onsuccess = () => { if (g.result !== undefined) { found = true; s.delete(key); } };
+        await done(tx);
+        return found;
+      },
+      // One readwrite transaction for the whole import (spike target: 1 MB in < 1 s).
+      async mergeBatch(items, decide) {
+        const tx = db.transaction("entries", "readwrite");
+        const s = tx.objectStore("entries");
+        const outcomes = new Array(items.length);
+        items.forEach((item, i) => {
+          const g = s.get(item.id);
+          g.onsuccess = () => {
+            const outcome = decide(item, g.result === undefined ? null : g.result);
+            outcomes[i] = outcome;
+            if (outcome !== "skipped") s.put(item);
+          };
+        });
+        await done(tx);
+        return outcomes;
+      },
+      close() { db.close(); }
+    };
+  }
+
+  function createJournal(backend) {
+    const byNewest = (a, b) => (Date.parse(b.createdAt) - Date.parse(a.createdAt)) || (a.id < b.id ? 1 : a.id > b.id ? -1 : 0);
+    const read = (e) => e === undefined || e === null ? null : canonicalOrder(withAdditiveDefaults(e));
+    const journal = {
+      get mode() { return backend.mode; },
+
+      // UI path: normalizes and stamps updatedAt.
+      async save(entry) {
+        const n = normalizeEntry(entry);
+        n.updatedAt = nowRFC3339();
+        await backend.put("entries", n);
+        return n;
+      },
+      async load(id) { return read(await backend.get("entries", id)); },
+      async list({ from, to } = {}) {
+        let all = (await backend.getAll("entries")).map(read);
+        const f = from ? Date.parse(from) : -Infinity, t = to ? Date.parse(to) : Infinity;
+        if (from || to) all = all.filter(e => { const c = Date.parse(e.createdAt); return c >= f && c <= t; });
+        return all.sort(byNewest);
+      },
+      async delete(id) { return backend.delete("entries", id); },
+
+      // Import path: validates, then stores records exactly as given (updatedAt preserved).
+      async importAll(entries) {
+        const errors = [];
+        const valid = new Map();
+        let skipped = 0;
+        entries.forEach((raw, i) => {
+          const label = (raw && typeof raw === "object" && typeof raw.id === "string" && raw.id) ? raw.id : `(entry ${i + 1})`;
+          if (!raw || typeof raw !== "object" || Array.isArray(raw)) { errors.push({ id: label, fields: [{ field: "(entry)", message: "not an object" }] }); return; }
+          const e = withAdditiveDefaults(raw);
+          const errs = validateEntry(e);
+          if (errs.length) { errors.push({ id: label, fields: errs }); return; }
+          const c = canonicalOrder(e);
+          const prev = valid.get(c.id);
+          if (!prev) valid.set(c.id, c);
+          else { skipped++; if (Date.parse(c.updatedAt) > Date.parse(prev.updatedAt)) valid.set(c.id, c); }
+        });
+        const items = Array.from(valid.values());
+        const outcomes = await backend.mergeBatch(items, (inc, ex) =>
+          !ex ? "added" : (Date.parse(inc.updatedAt) > Date.parse(ex.updatedAt) ? "updated" : "skipped"));
+        const count = (k) => outcomes.filter(o => o === k).length;
+        return { added: count("added"), updated: count("updated"), skipped: skipped + count("skipped"), errors };
+      },
+
+      async exportAll() {
+        const entries = await journal.list();
+        return { format: "cbt-workbook", formatVersion: FORMAT_VERSION, appVersion: APP_VERSION, exportedAt: nowRFC3339(), entries };
+      },
+
+      drafts: {
+        save: (rec) => backend.put("drafts", clone(rec)),
+        list: async () => (await backend.getAll("drafts")).sort((a, b) => Date.parse(b.savedAt) - Date.parse(a.savedAt)),
+        delete: (id) => backend.delete("drafts", id)
+      },
+      meta: {
+        get: async (key) => { const r = await backend.get("meta", key); return r ? r.value : null; },
+        set: (key, value) => backend.put("meta", { key, value })
+      }
+    };
+    return journal;
+  }
+
+  /* ---------- Import / export document handling (spec §7) ---------- */
+  async function importDocumentText(text, j) {
+    let doc;
+    try { doc = JSON.parse(text); } catch (err) { throw new Error(`The file is not valid JSON (${err.message}). Nothing was imported.`); }
+    if (!doc || typeof doc !== "object" || Array.isArray(doc)) throw new Error("The file is not a CBT Workbook backup. Nothing was imported.");
+    if (doc.format !== "cbt-workbook") throw new Error("The file is missing format \"cbt-workbook\". Nothing was imported.");
+    const fv = doc.formatVersion;
+    if (!Number.isInteger(fv) || fv < 0) throw new Error("The file has a missing or invalid formatVersion. Nothing was imported.");
+    if (fv > FORMAT_VERSION) throw new Error(`This file was written by a newer version of the workbook (formatVersion ${fv}); this copy reads up to formatVersion ${FORMAT_VERSION}. Nothing was imported.`);
+    if (!Array.isArray(doc.entries)) throw new Error("The file has no entries list. Nothing was imported.");
+    const entries = migrateEntries(doc.entries, fv);
+    return j.importAll(entries);
+  }
+
+  const csvCell = (v) => `"${(v === null || v === undefined ? "" : String(v)).replace(/"/g, '""')}"`;
+  const csvDoc = (rows) => "﻿" + rows.map(r => r.map(csvCell).join(",")).join("\r\n") + "\r\n";
+
+  // Spec §7 columns, plus underlying_belief appended at the end (additive, 1.1).
+  const CSV_HEADERS = ["entry_id", "created_at", "status", "situation", "emotion", "emotion_before", "emotion_after", "emotion_delta", "thought", "belief_before", "belief_after", "belief_delta", "thinking_patterns", "urge", "action", "evidence_for", "evidence_against", "alternative_perspective", "next_action", "underlying_belief"];
+  function buildCSV(entries) {
+    const rows = [CSV_HEADERS];
+    for (const e of entries.filter(x => x.exercise === "thought-record")) {
+      const at = e.automaticThought || {}, b = e.behavior || {};
+      const head = [e.id, e.createdAt, e.status, e.situation];
+      const tail = [at.text, at.beliefBefore, at.beliefAfter, computeDelta(at.beliefBefore, at.beliefAfter), (e.thinkingPatterns || []).join(";"), b.urge, b.action, e.evidenceFor, e.evidenceAgainst, e.alternativePerspective, e.nextAction, e.underlyingBelief];
+      const ems = (e.emotions && e.emotions.length) ? e.emotions : [null];
+      for (const m of ems) rows.push([...head, ...(m ? [m.name, m.before, m.after, computeDelta(m.before, m.after)] : [null, null, null, null]), ...tail]);
+    }
+    return csvDoc(rows);
+  }
+  const CSV_BE_HEADERS = ["entry_id", "created_at", "status", "linked_entry_id", "belief", "belief_before", "belief_after", "belief_delta", "prediction", "plan", "planned_for", "safety_behaviors", "alternative_belief", "alternative_before", "alternative_after", "alternative_delta", "outcome", "learning", "next_step"];
+  function buildExperimentCSV(entries) {
+    const rows = [CSV_BE_HEADERS];
+    for (const e of entries.filter(x => x.exercise === "behavioral-experiment")) {
+      const b = e.belief || {}, a = e.alternativeBelief || {};
+      rows.push([e.id, e.createdAt, e.status, e.linkedEntryId, b.text, b.ratingBefore, b.ratingAfter, computeDelta(b.ratingBefore, b.ratingAfter), e.prediction, e.plan, e.plannedFor, e.safetyBehaviors,
+        a.text, a.ratingBefore, a.ratingAfter, computeDelta(a.ratingBefore, a.ratingAfter), e.outcome, e.learning, e.nextStep]);
+    }
+    return csvDoc(rows);
+  }
+
+  function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = el("a", { href: url, download: filename });
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  /* =========================================================
+   * EXERCISE DEFINITIONS (drive the shared wizard)
+   * A step's `valid` gates Next for required steps; `fields` are rendered with the DOM API.
+   * ========================================================= */
+  const ctx = (label, text) => [label, text];
+  const EXERCISES = {
+    "thought-record": {
+      title: "Thought record", required: 3, blank: createBlankEntry,
+      saveLabel: () => "Save",
+      finalStatus: (d, finishing) => (finishing || d.status === "complete") ? "complete" : "partial",
+      steps: [
+        { title: "Situation", prompt: "What happened? Where, when, who?",
+          valid: d => !isBlank(d.situation), error: "Describe the situation to continue.",
+          fields: [{ type: "textarea", path: "situation", label: "What happened? Where, when, who? (required)" }],
+          questions: ["Where were you, and who was with you?", "When did it happen? What were you doing just before?", "If a camera had recorded it, what would the footage show?"] },
+        { title: "Emotions", prompt: "What did you feel, and how strongly?",
+          valid: d => d.emotions.length > 0 && d.emotions.every(m => !isBlank(m.name) && isRating(m.before)), error: "Add at least one emotion and rate each one to continue.",
+          fields: [{ type: "emotions" }],
+          questions: ["Where do you notice the feeling in your body?", "Is more than one feeling present? Which is strongest?", "Can you name each feeling in one word?"] },
+        { title: "Automatic thought", prompt: "What went through your mind?",
+          valid: d => !isBlank(d.automaticThought.text) && isRating(d.automaticThought.beliefBefore), error: "Write the thought and rate how much you believed it to continue.",
+          fields: [
+            { type: "textarea", path: "automaticThought.text", label: "What went through your mind? (required)" },
+            { type: "rating", path: "automaticThought.beliefBefore", label: "How much did you believe the thought? (0–100, required)" },
+            { type: "textarea", path: "underlyingBelief", label: "Optional: if the thought were true, what would it mean about you?", help: "Asking “and what would that mean?” a few times can reveal the belief underneath.", rows: 2 }
+          ],
+          questions: ["What was going through your mind just before you started to feel this way?", "What are you afraid might happen?", "What does this situation seem to say about you, your life, or your future?", "Was there an image or a memory?"] },
+        { title: "Behavior / urge", prompt: "What did you do, or feel like doing?",
+          fields: [{ type: "line", path: "behavior.urge", label: "What did you feel like doing?" }, { type: "line", path: "behavior.action", label: "What did you actually do?" }],
+          questions: ["Did you avoid, leave, check, or ask for reassurance?", "What did you do to make the feeling go away?", "Did doing it cost you anything?"] },
+        { title: "Thinking patterns", prompt: "Could any of these be relevant?",
+          fields: [{ type: "patterns" }],
+          context: d => [ctx("Your thought", d.automaticThought.text)],
+          questions: ["Which description sounds most like the thought, if any?", "Does the thought go beyond the facts in the situation?"] },
+        { title: "Evidence for", prompt: "What supports the thought?",
+          fields: [{ type: "textarea", path: "evidenceFor", label: "What supports the thought?" }],
+          context: d => [ctx("Your thought", d.automaticThought.text)],
+          questions: ["What facts, rather than feelings or interpretations, support it?", "Would this evidence convince a neutral observer?", "Are you treating a feeling as a fact?"] },
+        { title: "Evidence against", prompt: "What doesn't fit the thought?",
+          fields: [{ type: "textarea", path: "evidenceAgainst", label: "What doesn't fit the thought?" }],
+          context: d => [ctx("Your thought", d.automaticThought.text), ctx("Evidence for", d.evidenceFor)],
+          questions: ["Has there been a time when this thought wasn't true?", "If a friend had this thought, what would you tell them?", "What would someone who cares about you point out?", "Are you overlooking strengths or positives?", "Will this matter in a week? In a year?"] },
+        { title: "Balanced perspective", prompt: "What's a more complete way to see it?",
+          fields: [{ type: "textarea", path: "alternativePerspective", label: "What's a more complete way to see it?" }, { type: "line", path: "nextAction", label: "What will you do next?" }],
+          context: d => [ctx("Your thought", d.automaticThought.text), ctx("Evidence for", d.evidenceFor), ctx("Evidence against", d.evidenceAgainst)],
+          questions: ["Taking all the evidence into account, what's a fairer way to put it?", "What would you say to a friend in this situation?", "What's the most likely outcome, and how would you cope with it?", "What one small step would help right now?"] },
+        { title: "Re-rate", prompt: "Now, how strong is each?",
+          fields: [
+            { type: "rating", path: "automaticThought.beliefAfter", label: d => `How much do you believe the thought now? (before: ${d.automaticThought.beliefBefore ?? "not rated"})` },
+            { type: "emotionsAfter" }
+          ],
+          context: d => [ctx("Your thought", d.automaticThought.text), ctx("Balanced perspective", d.alternativePerspective)],
+          questions: ["Reading your balanced perspective, how believable is the original thought now?", "Has anything shifted, even slightly?"] }
+      ]
+    },
+    "behavioral-experiment": {
+      title: "Behavioral experiment", required: 3, blank: createBlankExperiment,
+      saveLabel: d => isBlank(d.outcome) ? "Save plan" : "Save",
+      finalStatus: (d, finishing) => (!isBlank(d.outcome) && (finishing || d.status === "complete")) ? "complete" : "partial",
+      steps: [
+        { title: "Belief to test", prompt: "What belief do you want to test, and how much do you believe it?",
+          valid: d => !isBlank(d.belief.text) && isRating(d.belief.ratingBefore), error: "Write the belief and rate how much you believe it to continue.",
+          fields: [{ type: "textarea", path: "belief.text", label: "The belief, in your own words (required)", rows: 3 }, { type: "rating", path: "belief.ratingBefore", label: "How much do you believe it? (0–100, required)" }],
+          questions: ["Is there a thought from a recent thought record you'd like to test?", "What are you afraid would happen if you acted against this belief?", "Can you phrase it as something checkable: “If I…, then…”?"] },
+        { title: "Prediction", prompt: "If the belief is true, what exactly will happen?",
+          valid: d => !isBlank(d.prediction), error: "Write a prediction to continue.",
+          fields: [{ type: "textarea", path: "prediction", label: "What do you predict will happen? How would you know? (required)" }],
+          context: d => [ctx("Belief", d.belief.text)],
+          questions: ["What would you see or hear if the prediction came true?", "How will you tell whether it happened or not?"] },
+        { title: "Experiment", prompt: "What will you do to test it? When and where?",
+          valid: d => !isBlank(d.plan), error: "Describe what you'll do to continue.",
+          fields: [{ type: "textarea", path: "plan", label: "What will you do? (required)" }, { type: "date", path: "plannedFor", label: "When? (optional)" }],
+          context: d => [ctx("Prediction", d.prediction)],
+          questions: ["Is it small enough to actually do this week?", "Where and when will you do it?", "Could you start with an easier version?"] },
+        { title: "Obstacles", prompt: "What might get in the way, and what would you usually do to feel safe?",
+          fields: [{ type: "textarea", path: "safetyBehaviors", label: "Obstacles, and safety behaviors you could drop", help: "Safety behaviors are things done to prevent the feared outcome, such as over-preparing, avoiding eye contact, or bringing someone along." }],
+          questions: ["If you kept those safety behaviors, could you tell whether the prediction was right?", "What could you do if it feels hard in the moment?"] },
+        { title: "Alternative view", prompt: "What's another way it could turn out?",
+          fields: [{ type: "textarea", path: "alternativeBelief.text", label: "Alternative belief", rows: 3 }, { type: "rating", path: "alternativeBelief.ratingBefore", label: "How much do you believe the alternative? (0–100)" }],
+          context: d => [ctx("Belief", d.belief.text)],
+          questions: ["If the belief were wrong, what would happen instead?", "What would a friend predict?"] },
+        { title: "Outcome", prompt: "What actually happened?",
+          fields: [{ type: "textarea", path: "outcome", label: "What happened? Stick to what you observed." }],
+          context: d => [ctx("Prediction", d.prediction), ctx("Plan", d.plan)],
+          questions: ["What did you see and hear?", "How did other people respond?", "Did you drop the safety behaviors you planned to?"] },
+        { title: "Reflect and re-rate", prompt: "What did you learn, and how strongly do you believe it now?",
+          fields: [
+            { type: "textarea", path: "learning", label: "What did you learn?" },
+            { type: "rating", path: "belief.ratingAfter", label: d => `How much do you believe the original belief now? (before: ${d.belief.ratingBefore ?? "not rated"})` },
+            { type: "rating", path: "alternativeBelief.ratingAfter", label: d => `How much do you believe the alternative now? (before: ${d.alternativeBelief.ratingBefore ?? "not rated"})` },
+            { type: "line", path: "nextStep", label: "What's a next step or follow-up experiment?" }
+          ],
+          context: d => [ctx("Belief", d.belief.text), ctx("Prediction", d.prediction), ctx("Outcome", d.outcome)],
+          questions: ["How close was your prediction to what happened?", "What does the outcome suggest about the belief?", "If it went as feared, how did you cope?", "What would you test next?"] }
+      ]
+    }
+  };
+  const exOf = (d) => EXERCISES[d.exercise] || EXERCISES["thought-record"];
+
+  /* =========================================================
+   * APP STATE (spec §4)
+   * ========================================================= */
+  const state = {
+    screen: "home",       // home | wizard | journal | entry | trends | interchange | help (+ selftest, dev only)
+    mode: "memory",       // memory | indexeddb (set at startup)
+    draft: null,          // entry being edited, or null
+    step: 1,              // wizard only
+    selectedId: null,     // entry shown on the Entry view
+    dismissedHints: new Set(),
+    returnToWizard: false,
+    questionsOpen: false,
+    quick: null,          // quick-capture entry on Home
+    filters: { q: "", type: "all", status: "all", pattern: "all" },
+    trendRange: "all",
+    storageNote: "",
+    persistResult: "n/a"
+  };
+  let journal = createJournal(createMemoryBackend());
+
+  async function initStorage() {
+    try {
+      const db = await openIdb(DB_NAME);
+      const backend = createIdbBackend(db);
+      const stored = (await backend.get("meta", "formatVersion"))?.value;
+      if (Number.isInteger(stored) && stored > FORMAT_VERSION) {
+        backend.close();
+        throw new Error(`the saved journal was written by a newer version (formatVersion ${stored})`);
+      }
+      // Probe a real write/read/delete: some browsers open IndexedDB on file:// but refuse writes.
+      await backend.put("meta", { key: "probe", value: 1 });
+      if ((await backend.get("meta", "probe"))?.value !== 1) throw new Error("write probe failed");
+      await backend.delete("meta", "probe");
+      journal = createJournal(backend);
+      state.mode = "indexeddb";
+      try {
+        state.persistResult = (navigator.storage && navigator.storage.persist)
+          ? ((await navigator.storage.persist()) ? "Granted" : "Not granted (the browser may clear storage)")
+          : "Not supported by this browser";
+      } catch { state.persistResult = "Request failed"; }
+    } catch (err) {
+      journal = createJournal(createMemoryBackend());
+      state.mode = "memory";
+      state.storageNote = err && err.message ? err.message : String(err);
+      state.persistResult = "Not applicable in memory mode";
+    }
+  }
+
+  /* =========================================================
+   * DIALOG + TOAST
+   * ========================================================= */
+  function choose({ title, message, choices }) {
+    const dlg = $("choice-dialog");
+    if (!dlg.showModal) {
+      const ok = window.confirm(`${title}\n\n${message}`);
+      return Promise.resolve(ok ? choices[0].value : "cancel");
+    }
+    $("choice-title").textContent = title;
+    $("choice-msg").textContent = message;
+    $("choice-buttons").replaceChildren(...choices.map(c => el("button", { type: "button", class: c.cls || null, onclick: () => dlg.close(c.value) }, c.label)));
+    dlg.returnValue = "";
+    return new Promise(resolve => {
+      dlg.addEventListener("close", () => resolve(dlg.returnValue || "cancel"), { once: true });
+      dlg.showModal();
+    });
+  }
+  let toastTimer = null;
+  function toast(msg) {
+    const t = $("toast");
+    t.textContent = msg; t.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.hidden = true; }, 4000);
+  }
+
+  /* =========================================================
+   * RENDER (single entry point for screen changes)
+   * ========================================================= */
+  async function goToScreen(target, opts = {}) {
+    if (state.screen === "wizard" && target !== "wizard" && state.draft) {
+      if (target === "help") {
+        // Never put a prompt between the user and crisis contacts: keep the draft silently.
+        await autosaveDraft();
+        state.returnToWizard = true;
+      } else if (!opts.skipPrompt) {
+        const editing = !!(await journal.load(state.draft.id));
+        const choice = await choose({
+          title: "Leave this exercise?",
+          message: editing ? "Keep your changes as a draft to finish later, or discard them. The saved entry stays as it was." : "Keep this as a draft to finish later, or discard it.",
+          choices: [
+            { value: "keep", label: "Keep draft", cls: "primary" },
+            { value: "discard", label: editing ? "Discard changes" : "Discard draft", cls: "danger" },
+            { value: "cancel", label: "Stay here" }
+          ]
+        });
+        if (choice === "cancel") return;
+        if (choice === "keep") await autosaveDraft();
+        if (choice === "discard") await journal.drafts.delete(state.draft.id);
+        clearTimeout(autosaveTimer);
+        state.draft = null;
+      }
+    }
+    if (state.screen === "help" && target !== "wizard" && target !== "help" && state.returnToWizard) {
+      state.returnToWizard = false;
+      state.draft = null; // already kept in drafts; resumable from Home
+    }
+    state.screen = target;
+    await render(state, { focus: true });
+  }
+
+  async function render(s = state, { focus = false } = {}) {
+    document.querySelectorAll(".screen").forEach(n => { n.hidden = true; });
+    const active = $(`screen-${s.screen}`);
+    if (active) active.hidden = false;
+    document.querySelectorAll("header [data-nav]").forEach(b => {
+      const cur = b.dataset.nav === s.screen || (b.dataset.nav === "journal" && s.screen === "entry");
+      if (cur) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
+    });
+
+    $("app-mode-badge").textContent = s.mode === "indexeddb" ? "Saved locally" : "Memory only";
+    $("storage-warning").hidden = s.mode !== "memory";
+
+    if (s.screen === "home") await renderHome();
+    else if (s.screen === "wizard") renderWizard({ focus });
+    else if (s.screen === "journal") await renderJournal();
+    else if (s.screen === "entry") await renderEntryView();
+    else if (s.screen === "trends") await renderTrends();
+    else if (s.screen === "interchange") await renderInterchange();
+    else if (s.screen === "help") renderHelp();
+
+    if (focus && s.screen !== "wizard" && active) {
+      const h = active.querySelector("h1");
+      if (h) h.focus();
+    }
+  }
+
+  /* =========================================================
+   * SHARED CONTROLS
+   * ========================================================= */
+  function ratingControl({ id, label, value, onChange }) {
+    const numId = `${id}-num`, stateId = `${id}-state`;
+    const wrap = el("div", { class: "rating" });
+    const range = el("input", { type: "range", id: `${id}-range`, min: "0", max: "100", step: "1", "aria-label": `${label} (slider)` });
+    const num = el("input", { type: "number", id: numId, min: "0", max: "100", step: "1", inputmode: "numeric", "aria-describedby": stateId });
+    const status = el("span", { id: stateId, class: "rating-state" });
+    const clearBtn = el("button", { type: "button", class: "link-btn small", "aria-label": `Clear rating: ${label}` }, "Clear");
+    const show = (v, touchNumber = true) => {
+      wrap.dataset.rated = v === null ? "false" : "true";
+      range.value = v === null ? 50 : v;
+      range.setAttribute("aria-valuetext", v === null ? "Not rated" : String(v));
+      if (touchNumber) num.value = v === null ? "" : String(v);
+      status.textContent = v === null ? "Not rated" : "";
+      clearBtn.hidden = v === null;
+    };
+    range.addEventListener("input", () => { const v = clampInt(range.value); show(v); onChange(v); });
+    num.addEventListener("input", () => {
+      if (num.value.trim() === "") { show(null, false); onChange(null); return; }
+      const n = Number(num.value);
+      if (!Number.isFinite(n)) return;
+      const v = clampInt(n);
+      show(v, false); onChange(v);
+    });
+    num.addEventListener("change", () => { if (num.value.trim() !== "") show(clampInt(num.value)); });
+    clearBtn.addEventListener("click", () => { show(null); onChange(null); num.focus(); });
+    show(isRating(value) ? value : null);
+    wrap.append(el("label", { for: numId }, label), el("div", { class: "slider-paired" }, range, num, el("span", { class: "rating-aux" }, status, clearBtn)));
+    return wrap;
+  }
+
+  // Emotions with "before" ratings: one-click presets, or a custom name. Used by the wizard and Quick capture.
+  function emotionEditor(d, prefix, onChange) {
+    const wrap = el("div", { class: "emotion-editor" });
+    const err = el("p", { class: "field-error", role: "alert", hidden: true });
+    const customId = `${prefix}-custom-emotion`;
+    const add = (raw) => {
+      const name = String(raw || "").trim().replace(/\s+/g, " ").toLowerCase();
+      if (!name) return false;
+      if (d.emotions.some(m => (m.name || "").toLowerCase() === name)) { err.textContent = `“${name}” is already on the list.`; err.hidden = false; return false; }
+      d.emotions.push({ name, before: null, after: null });
+      draw(d.emotions.length - 1);
+      onChange();
+      return true;
+    };
+    const draw = (focusIdx = null) => {
+      const used = new Set(d.emotions.map(m => (m.name || "").toLowerCase()));
+      const rows = d.emotions.map((m, idx) => el("div", { class: "emotion-row" },
+        el("div", { class: "emotion-row-head" },
+          el("strong", {}, cap(m.name)),
+          el("button", { type: "button", class: "danger small", "aria-label": `Remove ${m.name}`, onclick: () => { d.emotions.splice(idx, 1); draw(); onChange(); $(customId).focus(); } }, "Remove")),
+        ratingControl({ id: `${prefix}-em-${idx}`, label: `${cap(m.name)}: how strong? (0–100)`, value: m.before, onChange: (v) => { m.before = v; onChange(); } })));
+      const custom = el("input", { type: "text", id: customId, autocomplete: "off" });
+      custom.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); if (add(custom.value)) custom.value = ""; } });
+      const presets = PRESET_EMOTIONS.filter(n => !used.has(n));
+      err.hidden = true;
+      fill(wrap, rows,
+        presets.length ? el("p", { class: "text-muted", style: "margin:0.25rem 0 0;", id: `${prefix}-presets-label` }, d.emotions.length ? "Add another emotion" : "Choose an emotion") : null,
+        presets.length ? el("div", { class: "chips", role: "group", "aria-labelledby": `${prefix}-presets-label` },
+          presets.map(n => el("button", { type: "button", class: "chip", "aria-label": `Add ${n}`, onclick: () => add(n) }, `+ ${cap(n)}`))) : null,
+        el("div", { class: "custom-add" },
+          el("div", {}, el("label", { for: customId }, "Or type your own"), custom),
+          el("button", { type: "button", onclick: () => { if (add(custom.value)) custom.value = ""; } }, "Add")),
+        err);
+      if (focusIdx !== null) { const n = $(`${prefix}-em-${focusIdx}-num`); if (n) n.focus(); }
+    };
+    draw();
+    return wrap;
+  }
+
+  /* =========================================================
+   * HOME
+   * ========================================================= */
+  async function renderHome() {
+    renderQuick();
+    const all = await journal.list();
+    // Up next: planned experiments (soonest first), then unfinished thought records.
+    const planned = all.filter(e => e.exercise === "behavioral-experiment" && e.status === "partial")
+      .sort((a, b) => (a.plannedFor || "9999").localeCompare(b.plannedFor || "9999"));
+    const unfinished = all.filter(e => e.exercise === "thought-record" && e.status === "partial").slice(0, 3);
+    const today = localDateStamp();
+    const items = [
+      ...planned.slice(0, 4).map(e => el("div", { class: "journal-item", style: "margin-bottom:0.75rem;" },
+        el("div", {},
+          el("div", { class: "meta-line" }, el("span", { class: "badge kind" }, "Experiment"),
+            el("span", { class: "text-muted" }, e.plannedFor ? `${e.plannedFor < today ? "Planned for" : e.plannedFor === today ? "Today," : "Planned for"} ${fmtPlainDate(e.plannedFor)}` : "No date set")),
+          el("p", { class: "pre", style: "margin:0;" }, trunc(e.belief.text, 140))),
+        el("button", { type: "button", class: "small", "aria-label": `Record outcome: ${trunc(e.belief.text, 60)}`, onclick: () => startWizard(clone(e), 6) }, "Record outcome"))),
+      ...unfinished.map(e => el("div", { class: "journal-item", style: "margin-bottom:0.75rem;" },
+        el("div", {},
+          el("div", { class: "meta-line" }, el("span", { class: "badge kind" }, "Thought record"), el("span", { class: "text-muted" }, fmtDateTime(e.createdAt))),
+          el("p", { class: "pre", style: "margin:0;" }, trunc(e.situation, 140))),
+        el("button", { type: "button", class: "small", "aria-label": `Finish thought record: ${trunc(e.situation, 60)}`, onclick: () => startWizard(clone(e), resumeStep(e)) }, "Finish")))
+    ];
+    $("upnext-card").hidden = items.length === 0;
+    $("upnext-list").replaceChildren(...items);
+
+    const drafts = (await journal.drafts.list()).filter(r => !state.quick || r.id !== state.quick.id);
+    $("drafts-card").hidden = drafts.length === 0;
+    $("drafts-list").replaceChildren(...drafts.map(rec => {
+      const ex = exOf(rec.entry || {});
+      const lead = rec.entry?.exercise === "behavioral-experiment" ? rec.entry?.belief?.text : rec.entry?.situation;
+      const title = isBlank(lead) ? "(nothing written yet)" : trunc(lead, 120);
+      return el("div", { class: "journal-item", style: "margin-bottom:0.75rem;" },
+        el("div", {},
+          el("div", { class: "meta-line" }, el("span", { class: "badge kind" }, ex.title), el("span", { class: "text-muted" }, `Saved ${fmtDateTime(rec.savedAt)}, at step ${rec.step} of ${ex.steps.length}`)),
+          el("p", { class: "pre", style: "margin:0;" }, title)),
+        el("div", { class: "btn-group", style: "margin:0; flex-wrap:nowrap;" },
+          el("button", { type: "button", class: "small", "aria-label": `Resume draft: ${title}`, onclick: () => resumeDraft(rec) }, "Resume"),
+          el("button", { type: "button", class: "small danger", "aria-label": `Discard draft: ${title}`, onclick: async () => {
+            const c = await choose({ title: "Discard this draft?", message: "The draft will be removed. Saved journal entries are not affected.", choices: [{ value: "discard", label: "Discard draft", cls: "danger" }, { value: "cancel", label: "Keep it" }] });
+            if (c === "discard") { await journal.drafts.delete(rec.id); await render(); }
+          } }, "Discard")));
+    }));
+  }
+
+  /* ---------- Quick capture: steps 1–3 on one card ---------- */
+  let quickTimer = null;
+  function renderQuick() {
+    if (!state.quick) state.quick = createBlankEntry();
+    const q = state.quick;
+    const onChange = () => {
+      $("quick-error").hidden = true;
+      clearTimeout(quickTimer);
+      quickTimer = setTimeout(() => {
+        if (state.quick === q && (!isBlank(q.situation) || q.emotions.length || !isBlank(q.automaticThought.text)))
+          journal.drafts.save({ id: q.id, step: 3, savedAt: nowRFC3339(), entry: q }).catch(err => console.error("Quick draft save failed", err));
+      }, 1000);
+    };
+    const text = (id, label, path, rows) => {
+      const t = el("textarea", { id, rows });
+      t.value = getPath(q, path) ?? "";
+      t.addEventListener("input", () => { setPath(q, path, t.value); onChange(); });
+      return el("div", { class: "field" }, el("label", { for: id }, label), t);
+    };
+    $("quick-body").replaceChildren(
+      text("q-situation", "Situation: what happened?", "situation", 2),
+      el("div", { class: "field" }, el("p", { style: "font-weight:600; font-size:0.92rem; margin:0;" }, "Feeling"), emotionEditor(q, "q", onChange)),
+      text("q-thought", "Thought: what went through your mind?", "automaticThought.text", 2),
+      ratingControl({ id: "q-belief", label: "How much did you believe it? (0–100)", value: q.automaticThought.beliefBefore, onChange: (v) => { q.automaticThought.beliefBefore = v; onChange(); } })
+    );
+  }
+  function quickProblem(q) {
+    const ex = EXERCISES["thought-record"];
+    const bad = [1, 2, 3].find(s => !ex.steps[s - 1].valid(q));
+    return bad ? { step: bad, msg: ["Describe the situation.", "Add at least one feeling and rate it.", "Write the thought and rate how much you believed it."][bad - 1] } : null;
+  }
+  async function quickSave() {
+    const q = state.quick, p = quickProblem(q);
+    if (p) { const e = $("quick-error"); e.textContent = `To save: ${p.msg}`; e.hidden = false; return false; }
+    clearTimeout(quickTimer);
+    await journal.save({ ...q, status: "partial" });
+    await journal.drafts.delete(q.id);
+    state.quick = null;
+    toast("Saved to your journal. You can finish it any time from Home or the Journal.");
+    await renderHome();
+    $("q-situation").focus();
+    return true;
+  }
+  function quickContinue() {
+    clearTimeout(quickTimer);
+    const q = state.quick, p = quickProblem(q);
+    state.quick = null;
+    return startWizard(q, p ? p.step : 4);
+  }
+
+  /* =========================================================
+   * WIZARD
+   * ========================================================= */
+  function startWizard(entry, step = 1) {
+    state.draft = entry;
+    state.step = Math.min(step, exOf(entry).steps.length);
+    state.dismissedHints = new Set();
+    state.returnToWizard = false;
+    return goToScreen("wizard");
+  }
+  const startNewWizard = () => startWizard(createBlankEntry(), 1);
+  const startNewExperiment = (linked = null, belief = null) => {
+    const d = createBlankExperiment(linked);
+    if (belief) { d.belief.text = belief.text; d.belief.ratingBefore = isRating(belief.rating) ? belief.rating : null; }
+    return startWizard(d, 1);
+  };
+  const resumeDraft = (rec) => startWizard(normalizeDraftShape(rec.entry), rec.step || 1);
+  function normalizeDraftShape(d) {
+    const n = normalizeEntry(d);
+    n.createdAt = d.createdAt; n.updatedAt = d.updatedAt;
+    return n;
+  }
+  // Where to pick up a saved, unfinished entry.
+  function resumeStep(e) {
+    if (e.exercise === "behavioral-experiment") return isBlank(e.outcome) ? 6 : 7;
+    const steps = EXERCISES["thought-record"].steps;
+    for (let i = 3; i < steps.length; i++) if (!stepFilled(steps[i], e)) return i + 1;
+    return steps.length;
+  }
+
+  async function autosaveDraft() {
+    if (!state.draft) return;
+    try { await journal.drafts.save({ id: state.draft.id, step: state.step, savedAt: nowRFC3339(), entry: state.draft }); }
+    catch (err) { console.error("Draft autosave failed", err); }
+  }
+  let autosaveTimer = null;
+  const scheduleAutosave = () => { clearTimeout(autosaveTimer); autosaveTimer = setTimeout(autosaveDraft, 1000); };
+
+  function stepValid(step, d = state.draft) {
+    if (!d) return false;
+    const s = exOf(d).steps[step - 1];
+    return !s || !s.valid || s.valid(d);
+  }
+  const isSaveable = (d = state.draft) => { if (!d) return false; for (let i = 1; i <= exOf(d).required; i++) if (!stepValid(i, d)) return false; return true; };
+  function stepFilled(step, d) {
+    return step.fields.some(f => {
+      if (f.type === "emotions") return d.emotions.length > 0;
+      if (f.type === "emotionsAfter") return d.emotions.some(m => m.after !== null && m.after !== undefined);
+      if (f.type === "patterns") return d.thinkingPatterns.length > 0;
+      const v = getPath(d, f.path);
+      return f.type === "rating" ? isRating(v) : !isBlank(v);
+    });
+  }
+
+  function showWizardError(msg) { const e = $("wizard-error"); e.textContent = msg || ""; e.hidden = !msg; }
+  function refreshWizardControls() {
+    const d = state.draft;
+    if (!d) return;
+    const ex = exOf(d);
+    $("wizard-btn-save").disabled = !isSaveable();
+    $("wizard-btn-save").textContent = ex.saveLabel(d);
+    const canJump = isSaveable();
+    $("step-jump-nav").querySelectorAll("button").forEach(b => {
+      const n = Number(b.dataset.step);
+      b.disabled = !canJump && n > ex.required;
+      b.classList.toggle("filled", stepFilled(ex.steps[n - 1], d));
+    });
+  }
+  function onDraftChange() {
+    refreshWizardControls();
+    if (!$("wizard-error").hidden && stepValid(state.step)) showWizardError("");
+    scheduleAutosave();
+  }
+
+  function buildField(f, d) {
+    const label = typeof f.label === "function" ? f.label(d) : f.label;
+    const id = f.path ? `w-${f.path.replace(/\./g, "-")}` : null;
+    if (f.type === "textarea" || f.type === "line" || f.type === "date") {
+      const helpId = f.help ? `${id}-help` : null;
+      const ctl = f.type === "textarea" ? el("textarea", { id, rows: f.rows || 4, "aria-describedby": helpId })
+        : el("input", { type: f.type === "date" ? "date" : "text", id, autocomplete: "off", "aria-describedby": helpId });
+      ctl.value = getPath(d, f.path) ?? "";
+      ctl.addEventListener("input", () => { setPath(d, f.path, ctl.value); onDraftChange(); });
+      return el("div", { class: "field" }, el("label", { for: id }, label), f.help ? el("p", { class: "help", id: helpId }, f.help) : null, ctl);
+    }
+    if (f.type === "rating") return ratingControl({ id, label, value: getPath(d, f.path), onChange: (v) => { setPath(d, f.path, v); onDraftChange(); } });
+    if (f.type === "emotions") return emotionEditor(d, "w", onDraftChange);
+    if (f.type === "emotionsAfter") {
+      if (!d.emotions.length) return el("p", { class: "text-muted" }, "No emotions were added in step 2.");
+      return el("div", {}, el("h2", { style: "margin-top:1.25rem;" }, "Emotions now"),
+        d.emotions.map((m, idx) => ratingControl({ id: `w-em-after-${idx}`, label: `${cap(m.name)} now (before: ${m.before ?? "not rated"})`, value: m.after, onChange: (v) => { m.after = v; onDraftChange(); } })));
+    }
+    if (f.type === "patterns") {
+      return el("fieldset", {}, el("legend", {}, "Could any of these be relevant? Select any, or none."),
+        el("div", { class: "tag-grid" }, PATTERN_OPTIONS.map(opt => {
+          const cb = el("input", { type: "checkbox", value: opt.slug, id: `pat-${opt.slug}`, "aria-describedby": `pat-${opt.slug}-d` });
+          cb.checked = d.thinkingPatterns.includes(opt.slug);
+          cb.addEventListener("change", () => {
+            if (cb.checked) { if (!d.thinkingPatterns.includes(opt.slug)) d.thinkingPatterns.push(opt.slug); }
+            else d.thinkingPatterns = d.thinkingPatterns.filter(s => s !== opt.slug);
+            onDraftChange();
+          });
+          return el("label", { class: "tag-label", for: `pat-${opt.slug}` }, cb, el("span", {}, opt.label), el("span", { class: "desc", id: `pat-${opt.slug}-d` }, opt.desc));
+        })));
+    }
+    return null;
+  }
+
+  function renderWizard({ focus = false } = {}) {
+    const d = state.draft, ex = exOf(d), total = ex.steps.length;
+    const meta = ex.steps[state.step - 1];
+    $("wizard-kind").textContent = ex.title;
+    $("step-title").textContent = `Step ${state.step}: ${meta.title}`;
+    $("step-prompt").textContent = meta.prompt;
+    $("wizard-progress").textContent = `Step ${state.step} of ${total}`;
+    $("wizard-bar").style.width = `${Math.round((state.step / total) * 100)}%`;
+
+    $("step-jump-nav").replaceChildren(...ex.steps.map((s, i) => el("li", {},
+      el("button", { type: "button", class: "step-dot small", "data-step": i + 1, "aria-current": i + 1 === state.step ? "step" : null, onclick: () => jumpToStep(i + 1) },
+        `${i + 1}. ${s.title}`))));
+
+    const context = (meta.context ? meta.context(d) : []).filter(([, t]) => !isBlank(t));
+    const qs = meta.questions?.length ? el("details", { class: "questions", open: state.questionsOpen || null },
+      el("summary", {}, "Questions that might help"), el("ul", {}, meta.questions.map(q => el("li", {}, q)))) : null;
+    if (qs) qs.addEventListener("toggle", () => { state.questionsOpen = qs.open; });
+    fill($("wizard-body"),
+      context.length ? el("dl", { class: "context" }, context.flatMap(([l, t]) => [el("dt", {}, l), el("dd", {}, trunc(t, 400))])) : null,
+      meta.fields.map(f => buildField(f, d)),
+      qs);
+
+    showWizardError("");
+    evaluateRules();
+    $("wizard-btn-prev").disabled = state.step === 1;
+    $("wizard-btn-next").textContent = state.step === total ? "Finish" : "Next";
+    refreshWizardControls();
+    if (focus) $("step-title").focus();
+  }
+
+  async function wizardNav(delta) {
+    const ex = exOf(state.draft), total = ex.steps.length;
+    if (delta > 0 && state.step <= ex.required && !stepValid(state.step)) {
+      showWizardError(ex.steps[state.step - 1].error);
+      const f = $("wizard-body").querySelector("textarea, input");
+      if (f) f.focus();
+      return;
+    }
+    if (delta > 0 && state.step === total) { await finalize(true); return; }
+    state.step = Math.min(total, Math.max(1, state.step + delta));
+    await autosaveDraft();
+    renderWizard({ focus: true });
+  }
+
+  async function jumpToStep(target) {
+    if (target > exOf(state.draft).required && !isSaveable()) return;
+    state.step = target;
+    await autosaveDraft();
+    renderWizard({ focus: true });
+  }
+
+  // Save rule (spec §2): saveable once the required steps are complete; the exercise decides "complete".
+  async function finalize(finishing) {
+    const d = state.draft, ex = exOf(d);
+    if (!isSaveable()) {
+      const firstBad = ex.steps.findIndex((s, i) => i < ex.required && !s.valid(d));
+      showWizardError(`Steps 1–${ex.required} must be complete before saving. ${ex.steps[firstBad].error}`);
+      return;
+    }
+    d.status = ex.finalStatus(d, finishing || state.step === ex.steps.length);
+    clearTimeout(autosaveTimer);
+    const saved = await journal.save(d);
+    await journal.drafts.delete(saved.id);
+    state.draft = null;
+    state.selectedId = saved.id;
+    await goToScreen("entry");
+    toast(saved.exercise === "behavioral-experiment" && saved.status === "partial" ? "Plan saved. Record the outcome from Home after you try it." : "Saved to your journal.");
+  }
+
+  function evaluateRules() {
+    const box = $("rule-hint-box");
+    const d = state.draft;
+    const match = d && PROMPT_RULES.find(r => r.exercise === d.exercise && r.step === state.step && !state.dismissedHints.has(r.id) && r.when(d));
+    if (match) { $("rule-hint-text").textContent = match.prompt; box.dataset.ruleId = match.id; box.hidden = false; }
+    else { box.hidden = true; delete box.dataset.ruleId; }
+  }
+
+  /* =========================================================
+   * JOURNAL + ENTRY VIEW
+   * ========================================================= */
+  const statusLabel = (e) => e.status === "complete" ? "complete" : (e.exercise === "behavioral-experiment" ? "planned" : "in progress");
+  const searchText = (e) => (e.exercise === "behavioral-experiment"
+    ? [e.belief?.text, e.prediction, e.plan, e.safetyBehaviors, e.alternativeBelief?.text, e.outcome, e.learning, e.nextStep]
+    : [e.situation, e.automaticThought?.text, e.underlyingBelief, e.behavior?.urge, e.behavior?.action, e.evidenceFor, e.evidenceAgainst, e.alternativePerspective, e.nextAction, ...(e.emotions || []).map(m => m.name)]
+  ).filter(Boolean).join("\n").toLowerCase();
+
+  function filterEntries(list, f) {
+    const q = f.q.trim().toLowerCase();
+    return list.filter(e => (f.type === "all" || e.exercise === f.type)
+      && (f.status === "all" || e.status === f.status)
+      && (f.pattern === "all" || (e.thinkingPatterns || []).includes(f.pattern))
+      && (!q || searchText(e).includes(q)));
+  }
+
+  async function renderJournal() {
+    const list = await journal.list();
+    const trs = list.filter(e => e.exercise === "thought-record"), bes = list.filter(e => e.exercise === "behavioral-experiment");
+    const done = (a) => a.filter(e => e.status === "complete").length;
+    $("journal-summary-text").textContent = list.length
+      ? `${trs.length} thought ${trs.length === 1 ? "record" : "records"} (${done(trs)} complete) and ${bes.length} ${bes.length === 1 ? "experiment" : "experiments"} (${done(bes)} complete).`
+      : "No entries yet.";
+    const counts = {};
+    trs.forEach(e => (e.thinkingPatterns || []).forEach(p => { counts[p] = (counts[p] || 0) + 1; }));
+    const freq = Object.entries(counts).sort((a, b) => b[1] - a[1] || patternLabel(a[0]).localeCompare(patternLabel(b[0])));
+    $("journal-patterns-summary").textContent = freq.length ? `Thinking patterns you noted: ${freq.map(([s, n]) => `${patternLabel(s)} (${n})`).join(", ")}.` : "";
+
+    const ps = $("flt-pattern");
+    if (!ps.options.length) ps.replaceChildren(el("option", { value: "all" }, "Any"), ...PATTERN_OPTIONS.map(p => el("option", { value: p.slug }, p.label)));
+    $("flt-q").value = state.filters.q; $("flt-type").value = state.filters.type; $("flt-status").value = state.filters.status; ps.value = state.filters.pattern;
+    renderJournalList(list);
+  }
+
+  function renderJournalList(list) {
+    const shown = filterEntries(list, state.filters);
+    const filtered = shown.length !== list.length;
+    $("journal-count").textContent = list.length ? (filtered ? `Showing ${shown.length} of ${list.length} entries.` : "") : "";
+    const box = $("journal-list");
+    if (!list.length) { box.replaceChildren(el("p", { class: "text-muted" }, "Start a thought record or an experiment from Home and it will appear here.")); return; }
+    if (!shown.length) { box.replaceChildren(el("p", { class: "text-muted" }, "No entries match these filters.")); return; }
+    box.replaceChildren(...shown.map(item => {
+      const isBE = item.exercise === "behavioral-experiment";
+      const b = beliefOf(item), dlt = computeDelta(b.before, b.after);
+      const lead = isBE ? item.belief.text : item.situation;
+      return el("div", { class: "card journal-item" },
+        el("div", { style: "min-width:0;" },
+          el("div", { class: "meta-line" },
+            el("span", { class: "badge kind" }, isBE ? "Experiment" : "Thought record"),
+            el("span", { class: "badge" }, statusLabel(item)),
+            el("span", { class: "text-muted" }, fmtDateTime(item.createdAt))),
+          el("h2", { class: "pre" }, trunc(lead, 140)),
+          el("p", { class: "pre text-muted", style: "margin:0;" },
+            isBE ? (isBlank(item.outcome) ? `Prediction: ${trunc(item.prediction, 160)}` : `Outcome: ${trunc(item.outcome, 160)}`) : `Thought: ${trunc(item.automaticThought?.text, 160)}`,
+            dlt !== null ? `  ·  Belief ${b.before} → ${b.after} (${formatDelta(dlt)})` : "")),
+        el("button", { type: "button", "aria-label": `View ${isBE ? "experiment" : "entry"} from ${fmtDateTime(item.createdAt)}`, onclick: () => { state.selectedId = item.id; goToScreen("entry"); } }, "View"));
+    }));
+  }
+
+  async function renderEntryView() {
+    const entry = state.selectedId ? await journal.load(state.selectedId) : null;
+    const box = $("entry-detail");
+    ["btn-entry-edit", "btn-entry-delete", "btn-entry-print"].forEach(id => { $(id).disabled = !entry; });
+    $("btn-entry-continue").hidden = !entry || entry.status === "complete";
+    $("btn-entry-experiment").hidden = !entry || entry.exercise !== "thought-record";
+    if (!entry) { $("entry-title").textContent = "Entry not found"; box.replaceChildren(el("p", {}, "This entry is no longer in your journal.")); return; }
+    const isBE = entry.exercise === "behavioral-experiment";
+    $("btn-entry-continue").textContent = isBE && isBlank(entry.outcome) ? "Record outcome" : "Continue";
+    $("entry-title").textContent = `${isBE ? "Experiment" : "Thought record"} from ${fmtDateTime(entry.createdAt)}`;
+    const section = (title, ...kids) => el("div", { style: "margin-top:1.1rem;" }, el("h2", {}, title), ...kids);
+    const para = (label, text) => el("p", { class: "pre" }, label ? el("strong", {}, `${label}: `) : null, isBlank(text) ? "—" : text);
+    const rating = (v) => (v === null || v === undefined ? "—" : String(v));
+    const ratingTable = (rows, firstCol) => el("div", { class: "table-wrap" }, el("table", {},
+      el("thead", {}, el("tr", {}, el("th", { scope: "col" }, firstCol), el("th", { scope: "col", class: "num" }, "Before"), el("th", { scope: "col", class: "num" }, "After"), el("th", { scope: "col", class: "num" }, "Change in your rating"))),
+      el("tbody", {}, rows.length ? rows.map(([n, b, a]) => el("tr", {}, el("th", { scope: "row" }, n), el("td", { class: "num" }, rating(b)), el("td", { class: "num" }, rating(a)), el("td", { class: "num" }, formatDelta(computeDelta(b, a))))) : el("tr", {}, el("td", { colspan: "4" }, "None recorded")))));
+    const head = el("p", { class: "text-muted" }, el("span", { class: "badge" }, statusLabel(entry)), `  Last updated ${fmtDateTime(entry.updatedAt)}`);
+
+    if (isBE) {
+      const all = await journal.list();
+      const linked = entry.linkedEntryId ? all.find(e => e.id === entry.linkedEntryId) : null;
+      box.replaceChildren(el("div", { class: "card" }, head,
+        linked ? el("p", {}, "Tests a thought from ", el("button", { type: "button", class: "link-btn", onclick: () => { state.selectedId = linked.id; goToScreen("entry"); } }, `the thought record from ${fmtDate(linked.createdAt)}`), ".") : null,
+        section("Belief", para(null, entry.belief.text)),
+        section("Ratings", ratingTable([["Original belief", entry.belief.ratingBefore, entry.belief.ratingAfter], ...(isBlank(entry.alternativeBelief.text) && entry.alternativeBelief.ratingBefore === null ? [] : [["Alternative belief", entry.alternativeBelief.ratingBefore, entry.alternativeBelief.ratingAfter]])], "Belief")),
+        section("Prediction", para(null, entry.prediction)),
+        section("Experiment", para(null, entry.plan), para("When", entry.plannedFor ? fmtPlainDate(entry.plannedFor) : null), para("Obstacles and safety behaviors", entry.safetyBehaviors)),
+        section("Alternative view", para(null, entry.alternativeBelief.text)),
+        section("Outcome", para(null, entry.outcome)),
+        section("What I learned", para(null, entry.learning), para("Next step", entry.nextStep))));
+      return;
+    }
+    const at = entry.automaticThought || {};
+    const experiments = (await journal.list()).filter(e => e.exercise === "behavioral-experiment" && e.linkedEntryId === entry.id);
+    box.replaceChildren(el("div", { class: "card" }, head,
+      section("Situation", para(null, entry.situation)),
+      section("Emotions", ratingTable((entry.emotions || []).map(m => [cap(m.name), m.before, m.after]), "Emotion")),
+      section("Automatic thought", para(null, at.text), ratingTable([["Belief in the thought", at.beliefBefore, at.beliefAfter]], "Rating"),
+        isBlank(entry.underlyingBelief) ? null : para("What it would mean", entry.underlyingBelief)),
+      section("Behavior", para("Urge", entry.behavior?.urge), para("Action", entry.behavior?.action)),
+      section("Thinking patterns", el("p", {}, entry.thinkingPatterns?.length ? entry.thinkingPatterns.map(patternLabel).join(", ") : "None selected")),
+      section("Evidence", para("For", entry.evidenceFor), para("Against", entry.evidenceAgainst)),
+      section("Balanced perspective", para(null, entry.alternativePerspective), para("Next action", entry.nextAction)),
+      experiments.length ? section("Experiments testing this thought", el("ul", { style: "margin-left:1.25rem;" }, experiments.map(x => el("li", {},
+        el("button", { type: "button", class: "link-btn", onclick: () => { state.selectedId = x.id; goToScreen("entry"); } }, `${fmtDate(x.createdAt)}: ${trunc(x.belief.text, 80)}`), ` (${statusLabel(x)})`)))) : null));
+  }
+
+  /* =========================================================
+   * TRENDS (inline SVG; tokens validated for both themes)
+   * ========================================================= */
+  function hexLum(hex) {
+    const h = hex.replace("#", "").trim();
+    const full = h.length === 3 ? h.split("").map(x => x + x).join("") : h;
+    const [r, g, b] = [0, 2, 4].map(i => parseInt(full.slice(i, i + 2), 16) / 255).map(c => c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  }
+  const contrast = (a, b) => { const [x, y] = [hexLum(a), hexLum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  const cssVar = (n) => getComputedStyle(document.documentElement).getPropertyValue(`--${n}`).trim();
+
+  // Wraps a chart: title, legend, hover tooltip, and a table view (identity is never color-alone).
+  function chartCard({ title, subtitle, legend, svgEl, table }) {
+    const tip = el("div", { class: "viz-tip", hidden: true });
+    const wrap = el("div", { class: "viz-wrap" }, svgEl, tip);
+    let lastHit = null;
+    svgEl.addEventListener("pointermove", (ev) => {
+      const t = ev.target.closest("[data-tip]");
+      if (lastHit && lastHit !== t) lastHit.querySelector(".hit")?.classList.remove("on");
+      if (!t) { tip.hidden = true; lastHit = null; return; }
+      t.querySelector(".hit")?.classList.add("on");
+      lastHit = t;
+      tip.textContent = t.dataset.tip; tip.hidden = false;
+      const r = wrap.getBoundingClientRect();
+      const x = ev.clientX - r.left, y = ev.clientY - r.top;
+      tip.style.left = `${Math.min(Math.max(0, x + 12), r.width - tip.offsetWidth)}px`;
+      tip.style.top = `${Math.max(0, y - tip.offsetHeight - 12)}px`;
+    });
+    svgEl.addEventListener("pointerleave", () => { tip.hidden = true; lastHit?.querySelector(".hit")?.classList.remove("on"); lastHit = null; });
+    return el("div", { class: "card" }, el("h2", {}, title), subtitle ? el("p", { class: "text-muted" }, subtitle) : null,
+      legend ? el("div", { class: "legend" }, legend.map(([cls, label]) => el("span", {}, el("span", { class: `swatch ${cls.startsWith("h") ? "sq" : ""}`, style: `background: var(--${cls === "m-before" ? "viz-before" : cls === "m-after" ? "viz-after" : cls})` }), label))) : null,
+      wrap,
+      el("details", { class: "data-table" }, el("summary", {}, "Show as a table"), el("div", { class: "table-wrap" }, table)));
+  }
+  const dataTable = (heads, rows) => el("table", {},
+    el("thead", {}, el("tr", {}, heads.map((h, i) => el("th", { scope: "col", class: i ? "num" : null }, h)))),
+    el("tbody", {}, rows.map(r => el("tr", {}, r.map((c, i) => i ? el("td", { class: "num" }, c ?? "—") : el("th", { scope: "row" }, c))))));
+
+  // Before → after per entry, oldest to newest (dumbbell). One hue, two shades.
+  function beliefChart(entries, what) {
+    const rows = entries.slice(0, 40).reverse().map(e => ({ e, ...beliefOf(e) })).filter(r => isRating(r.before));
+    const W = 640, H = 220, L = 34, R = 10, T = 10, B = 24, iw = W - L - R, ih = H - T - B;
+    const y = (v) => T + ih - (v / 100) * ih, step = iw / Math.max(rows.length, 1);
+    const s = svg("svg", { viewBox: `0 0 ${W} ${H}`, class: "viz", role: "img", "aria-label": `Belief ratings before and after for ${rows.length} ${what}. A table view follows.` });
+    for (const t of [0, 25, 50, 75, 100]) s.append(svg("line", { class: t ? "v-grid" : "v-axis", x1: L, x2: W - R, y1: y(t), y2: y(t) }), svg("text", { x: L - 6, y: y(t) + 4, "text-anchor": "end" }, t));
+    rows.forEach((r, i) => {
+      const cx = L + step * (i + 0.5);
+      const dl = computeDelta(r.before, r.after);
+      const g = svg("g", { "data-tip": `${fmtDate(r.e.createdAt)}\n${trunc(r.text, 70)}\nBefore ${r.before} · After ${r.after ?? "not rated"}${dl !== null ? ` · Change ${formatDelta(dl)}` : ""}` },
+        svg("rect", { class: "hit", x: L + step * i, y: T, width: step, height: ih, rx: 4 }));
+      const rad = step < 12 ? 4 : 5;
+      if (r.after !== null) g.append(svg("line", { class: "v-link", x1: cx, x2: cx, y1: y(r.before), y2: y(r.after) }));
+      g.append(svg("circle", { class: "m-before", cx, cy: y(r.before), r: rad }));
+      if (r.after !== null) g.append(svg("circle", { class: "m-after", cx, cy: y(r.after), r: rad }));
+      s.append(g);
+    });
+    if (rows.length) {
+      s.append(svg("text", { x: L, y: H - 6 }, fmtDate(rows[0].e.createdAt)));
+      if (rows.length > 1) s.append(svg("text", { x: W - R, y: H - 6, "text-anchor": "end" }, fmtDate(rows[rows.length - 1].e.createdAt)));
+    }
+    return chartCard({
+      title: `How much you believed it: ${what}`, subtitle: `Each column is one entry, oldest to newest${entries.length > 40 ? " (latest 40)" : ""}. Hover for details.`,
+      legend: [["m-before", "Before"], ["m-after", "After"]], svgEl: s,
+      table: dataTable(["Entry", "Before", "After", "Change"], rows.map(r => [`${fmtDate(r.e.createdAt)}: ${trunc(r.text, 50)}`, r.before, r.after, formatDelta(computeDelta(r.before, r.after))]))
+    });
+  }
+
+  // Typical emotion intensity, among entries that have both ratings (horizontal dumbbell).
+  function emotionChart(trs) {
+    const by = new Map();
+    trs.forEach(e => (e.emotions || []).forEach(m => {
+      const k = (m.name || "").toLowerCase(); if (!k) return;
+      const o = by.get(k) || { name: k, count: 0, b: [], a: [] };
+      o.count++; if (isRating(m.before) && isRating(m.after)) { o.b.push(m.before); o.a.push(m.after); }
+      by.set(k, o);
+    }));
+    const rows = [...by.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name)).slice(0, 8)
+      .map(o => ({ ...o, mb: median(o.b), ma: median(o.a) }));
+    const W = 640, L = 150, R = 16, T = 8, rowH = 32, H = T + rows.length * rowH + 24, iw = W - L - R;
+    const x = (v) => L + (v / 100) * iw;
+    const s = svg("svg", { viewBox: `0 0 ${W} ${H}`, class: "viz", role: "img", "aria-label": "Median emotion ratings before and after. A table view follows." });
+    for (const t of [0, 25, 50, 75, 100]) s.append(svg("line", { class: t ? "v-grid" : "v-axis", x1: x(t), x2: x(t), y1: T, y2: H - 22 }), svg("text", { x: x(t), y: H - 6, "text-anchor": "middle" }, t));
+    rows.forEach((r, i) => {
+      const cy = T + i * rowH + rowH / 2;
+      const g = svg("g", { "data-tip": `${cap(r.name)}: recorded ${r.count} ${r.count === 1 ? "time" : "times"}\n${r.b.length ? `Median before ${r.mb} · after ${r.ma} (${r.b.length} with both ratings)` : "No re-ratings yet"}` },
+        svg("rect", { class: "hit", x: 0, y: cy - rowH / 2, width: W, height: rowH, rx: 4 }),
+        svg("text", { x: L - 10, y: cy + 4, "text-anchor": "end", class: "v-strong" }, `${cap(r.name)} (${r.count})`));
+      if (r.b.length) g.append(svg("line", { class: "v-link", x1: x(r.mb), x2: x(r.ma), y1: cy, y2: cy }), svg("circle", { class: "m-before", cx: x(r.mb), cy, r: 6 }), svg("circle", { class: "m-after", cx: x(r.ma), cy, r: 6 }));
+      else g.append(svg("text", { x: L + 4, y: cy + 4 }, "no re-ratings yet"));
+      s.append(g);
+    });
+    return chartCard({
+      title: "Emotions you recorded", subtitle: "Median rating before and after, among entries where you rated both. Number of times recorded in brackets.",
+      legend: [["m-before", "Before"], ["m-after", "After"]], svgEl: s,
+      table: dataTable(["Emotion", "Times recorded", "With both ratings", "Median before", "Median after"], rows.map(r => [cap(r.name), r.count, r.b.length, r.mb, r.ma]))
+    });
+  }
+
+  function patternChart(trs) {
+    const counts = {};
+    trs.forEach(e => (e.thinkingPatterns || []).forEach(p => { counts[p] = (counts[p] || 0) + 1; }));
+    const rows = Object.entries(counts).sort((a, b) => b[1] - a[1] || patternLabel(a[0]).localeCompare(patternLabel(b[0])));
+    const max = Math.max(1, ...rows.map(r => r[1]));
+    const W = 640, L = 190, R = 40, T = 4, rowH = 28, bh = 16, H = T + rows.length * rowH + 4, iw = W - L - R;
+    const s = svg("svg", { viewBox: `0 0 ${W} ${H}`, class: "viz", role: "img", "aria-label": "How often each thinking pattern was noted. A table view follows." });
+    s.append(svg("line", { class: "v-axis", x1: L, x2: L, y1: T, y2: H - 4 }));
+    rows.forEach(([slug, n], i) => {
+      const y0 = T + i * rowH + (rowH - bh) / 2, w = Math.max(6, (n / max) * iw), r = 4;
+      s.append(svg("g", { "data-tip": `${patternLabel(slug)}: noted in ${n} of ${trs.length} thought records` },
+        svg("rect", { class: "hit", x: 0, y: T + i * rowH, width: W, height: rowH, rx: 4 }),
+        svg("text", { x: L - 10, y: y0 + bh / 2 + 4, "text-anchor": "end", class: "v-strong" }, patternLabel(slug)),
+        svg("path", { class: "m-bar", d: `M${L},${y0} h${w - r} a${r},${r} 0 0 1 ${r},${r} v${bh - 2 * r} a${r},${r} 0 0 1 -${r},${r} h-${w - r} z` }),
+        svg("text", { x: L + w + 6, y: y0 + bh / 2 + 4 }, n)));
+    });
+    return chartCard({
+      title: "Thinking patterns you noted", subtitle: "Number of thought records where you selected each pattern.", svgEl: s,
+      table: dataTable(["Pattern", "Thought records"], rows.map(([slug, n]) => [patternLabel(slug), n]))
+    });
+  }
+
+  const HEAT_INK_DARK = "#10161d";
+  const heatInk = (bg) => contrast(bg, HEAT_INK_DARK) >= contrast(bg, "#ffffff") ? HEAT_INK_DARK : "#ffffff";
+  const BANDS = ["Night (0–6)", "Morning (6–12)", "Afternoon (12–18)", "Evening (18–24)"];
+  const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  function heatGrid(entries) {
+    const grid = DAYS.map(() => BANDS.map(() => 0));
+    entries.forEach(e => { const p = recordedParts(e.createdAt); if (p) grid[p.weekday][Math.floor(p.hour / 6)]++; });
+    return grid;
+  }
+  function timingChart(entries) {
+    const grid = heatGrid(entries);
+    const max = Math.max(1, ...grid.flat());
+    const level = (n) => n === 0 ? 0 : Math.max(1, Math.ceil((n / max) * 6));
+    const W = 640, L = 44, R = 4, T = 22, rh = 30, H = T + 7 * rh + 2, cw = (W - L - R) / 4;
+    const s = svg("svg", { viewBox: `0 0 ${W} ${H}`, class: "viz", role: "img", "aria-label": "Number of entries by weekday and time of day. A table view follows." });
+    BANDS.forEach((b, j) => s.append(svg("text", { x: L + cw * j + cw / 2, y: 14, "text-anchor": "middle" }, b)));
+    const inkFor = (lv) => heatInk(cssVar(`heat-${lv}`)) === HEAT_INK_DARK ? "ink-dark" : "ink-light";
+    DAYS.forEach((d, i) => {
+      s.append(svg("text", { x: L - 8, y: T + i * rh + rh / 2 + 4, "text-anchor": "end" }, d));
+      BANDS.forEach((b, j) => {
+        const n = grid[i][j], lv = level(n);
+        const g = svg("g", { "data-tip": `${d}, ${b}: ${n} ${n === 1 ? "entry" : "entries"}` },
+          svg("rect", { class: `h${lv}`, x: L + cw * j + 1, y: T + i * rh + 1, width: cw - 2, height: rh - 2, rx: 4 }));
+        if (n) g.append(svg("text", { x: L + cw * j + cw / 2, y: T + i * rh + rh / 2 + 4, "text-anchor": "middle", class: inkFor(lv) }, n));
+        s.append(g);
+      });
+    });
+    return chartCard({
+      title: "When entries were written", subtitle: "Weekday and time of day, in the local time when each entry was started.",
+      legend: [["heat-1", "Fewer"], ["heat-6", "More"]], svgEl: s,
+      table: dataTable(["Day", ...BANDS], DAYS.map((d, i) => [d, ...grid[i]]))
+    });
+  }
+
+  async function renderTrends() {
+    document.querySelectorAll("#trend-range button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.range === state.trendRange)));
+    const all = await journal.list();
+    const since = state.trendRange === "all" ? -Infinity : Date.now() - Number(state.trendRange) * 86400000;
+    const list = all.filter(e => Date.parse(e.createdAt) >= since);
+    const trs = list.filter(e => e.exercise === "thought-record"), bes = list.filter(e => e.exercise === "behavioral-experiment");
+    const body = $("trends-body");
+    if (!list.length) { body.replaceChildren(el("div", { class: "card" }, el("p", { style: "margin:0;" }, all.length ? "No entries in this time range." : "Charts appear here after your first entry."))); return; }
+    const deltas = (a) => a.map(e => { const b = beliefOf(e); return computeDelta(b.before, b.after); }).filter(d => d !== null);
+    const trD = deltas(trs), beD = deltas(bes);
+    const tile = (label, value, note) => el("div", { class: "tile" }, el("div", { class: "t-label" }, label), el("div", { class: "t-value" }, value), note ? el("div", { class: "t-note" }, note) : null);
+    fill(body,
+      el("div", { class: "tiles" },
+        tile("Thought records", trs.length, `${trs.filter(e => e.status === "complete").length} complete`),
+        tile("Experiments", bes.length, `${bes.filter(e => e.status === "complete").length} with an outcome`),
+        tile("Median change in belief rating", formatDelta(median(trD)), trD.length ? `thought records with both ratings (${trD.length})` : "needs a re-rated thought record"),
+        bes.length ? tile("Median change, experiments", formatDelta(median(beD)), beD.length ? `experiments with both ratings (${beD.length})` : "needs a re-rated experiment") : null),
+      trs.length ? beliefChart(trs, "thought records") : null,
+      bes.length ? beliefChart(bes, "experiments") : null,
+      trs.length ? emotionChart(trs) : null,
+      trs.some(e => e.thinkingPatterns.length) ? patternChart(trs) : null,
+      timingChart(list));
+  }
+
+  /* =========================================================
+   * IMPORT / EXPORT SCREEN
+   * ========================================================= */
+  async function renderInterchange() {
+    $("storage-engine-label").textContent = state.mode === "indexeddb"
+      ? "IndexedDB on this computer (Mode B)"
+      : `In memory only (Mode A)${state.storageNote ? ` — ${state.storageNote}` : ""}`;
+    $("persist-status-label").textContent = state.persistResult;
+    const last = await journal.meta.get("lastExportedAt");
+    const count = (await journal.list()).length;
+    $("last-export-label").textContent = last ? `${fmtDateTime(last)}${state.mode === "memory" ? " (this session only)" : ""}` : "Never";
+    const stale = last ? (Date.now() - Date.parse(last)) / 86400000 > EXPORT_REMINDER_DAYS : count > 0;
+    $("export-reminder").hidden = !stale;
+  }
+
+  async function exportJSON() {
+    const doc = await journal.exportAll();
+    downloadBlob(new Blob([JSON.stringify(doc, null, 2)], { type: "application/json;charset=utf-8" }), `cbt-workbook-${localDateStamp()}.json`);
+    await journal.meta.set("lastExportedAt", doc.exportedAt);
+    await renderInterchange();
+    toast(`Exported ${doc.entries.length} ${doc.entries.length === 1 ? "entry" : "entries"}.`);
+  }
+  async function exportCSV(experiments) {
+    const entries = await journal.list();
+    downloadBlob(new Blob([experiments ? buildExperimentCSV(entries) : buildCSV(entries)], { type: "text/csv;charset=utf-8" }),
+      `cbt-workbook-${experiments ? "experiments-" : ""}${localDateStamp()}.csv`);
+  }
+
+  async function handleJSONImport(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const box = $("import-summary");
+    box.hidden = true;
+    box.classList.remove("error");
+    try {
+      const res = await importDocumentText(await file.text(), journal);
+      const parts = [el("p", { style: "margin:0;" }, `Import finished: ${res.added} added, ${res.updated} updated, ${res.skipped} skipped, ${res.errors.length} with errors.`)];
+      if (res.errors.length) {
+        parts.push(el("ul", { style: "margin:0.5rem 0 0 1.25rem;" }, res.errors.slice(0, 50).map(er =>
+          el("li", {}, `${er.id}: ${er.fields.map(f => `${f.field} ${f.message}`).join("; ")}`))));
+        if (res.errors.length > 50) parts.push(el("p", {}, `…and ${res.errors.length - 50} more.`));
+      }
+      box.replaceChildren(...parts);
+    } catch (err) {
+      box.classList.add("error");
+      box.replaceChildren(el("p", { style: "margin:0;" }, err.message));
+    }
+    box.hidden = false;
+    event.target.value = "";
+  }
+
+  /* =========================================================
+   * HELP
+   * ========================================================= */
+  function renderHelp() {
+    $("crisis-contacts-list").replaceChildren(...CRISIS_CONFIG.map(c => el("li", {}, el("strong", {}, `${c.name}: `), c.detail)));
+    $("btn-help-return").hidden = !(state.returnToWizard && state.draft);
+  }
+
+  /* =========================================================
+   * SELF-TEST (development only): open the file as index.html#selftest.
+   * The harness lives in selftest.js next to this file, so the app stays small
+   * and makes no requests in normal use.
+   * ========================================================= */
+  function startSelfTest() {
+    if (typeof window.runSelfTest === "function") return window.runSelfTest();
+    const s = el("script", { src: "selftest.js" });
+    s.onload = () => window.runSelfTest();
+    s.onerror = () => { state.screen = "selftest"; render(state); $("st-summary").textContent = "selftest.js was not found next to this file."; };
+    document.head.append(s);
+  }
+
+  /* =========================================================
+   * WIRING + INIT
+   * ========================================================= */
+  function wire() {
+    document.querySelectorAll("[data-nav]").forEach(b => b.addEventListener("click", () => {
+      if (location.hash === "#selftest") history.replaceState(null, "", location.pathname + location.search);
+      goToScreen(b.dataset.nav);
+    }));
+    $("footer-help").addEventListener("click", (e) => { e.preventDefault(); goToScreen("help"); });
+    $("btn-new").addEventListener("click", startNewWizard);
+    $("btn-new-experiment").addEventListener("click", () => startNewExperiment());
+    $("btn-quick-save").addEventListener("click", quickSave);
+    $("btn-quick-continue").addEventListener("click", quickContinue);
+    $("btn-close-wizard").addEventListener("click", () => goToScreen("home"));
+    $("wizard-btn-prev").addEventListener("click", () => wizardNav(-1));
+    $("wizard-btn-next").addEventListener("click", () => wizardNav(1));
+    $("wizard-btn-save").addEventListener("click", () => finalize(false));
+    $("btn-dismiss-hint").addEventListener("click", () => {
+      const box = $("rule-hint-box");
+      if (box.dataset.ruleId) state.dismissedHints.add(box.dataset.ruleId);
+      evaluateRules();
+      $("step-title").focus();
+    });
+    // Rules run on step entry (renderWizard) and on field blur / committed change (spec §5).
+    $("wizard-body").addEventListener("focusout", () => { if (state.draft) { evaluateRules(); autosaveDraft(); } });
+    $("wizard-body").addEventListener("change", () => { if (state.draft) evaluateRules(); });
+    document.addEventListener("keydown", (e) => {
+      if (state.screen !== "wizard" || !state.draft || !(e.ctrlKey || e.metaKey) || $("choice-dialog").open) return;
+      if (e.key === "Enter") { e.preventDefault(); wizardNav(1); }
+      else if (e.key.toLowerCase() === "s") { e.preventDefault(); finalize(false); } // explains what's missing if not saveable
+    });
+
+    const refilter = async () => { renderJournalList(await journal.list()); };
+    $("flt-q").addEventListener("input", (e) => { state.filters.q = e.target.value; refilter(); });
+    [["flt-type", "type"], ["flt-status", "status"], ["flt-pattern", "pattern"]].forEach(([id, k]) => $(id).addEventListener("change", (e) => { state.filters[k] = e.target.value; refilter(); }));
+    document.querySelectorAll("#trend-range button").forEach(b => b.addEventListener("click", () => { state.trendRange = b.dataset.range; renderTrends(); }));
+
+    $("btn-entry-back").addEventListener("click", () => goToScreen("journal"));
+    $("btn-entry-edit").addEventListener("click", async () => { const e = await journal.load(state.selectedId); if (e) await startWizard(clone(e), 1); });
+    $("btn-entry-continue").addEventListener("click", async () => { const e = await journal.load(state.selectedId); if (e) await startWizard(clone(e), resumeStep(e)); });
+    $("btn-entry-experiment").addEventListener("click", async () => {
+      const e = await journal.load(state.selectedId);
+      if (!e) return;
+      const at = e.automaticThought;
+      await startNewExperiment(e.id, { text: at.text, rating: at.beliefAfter ?? at.beliefBefore });
+    });
+    $("btn-entry-print").addEventListener("click", () => window.print());
+    $("btn-entry-delete").addEventListener("click", async () => {
+      const c = await choose({ title: "Delete this entry?", message: "It will be removed from this journal. Exported backups are not affected.", choices: [{ value: "delete", label: "Delete entry", cls: "danger" }, { value: "cancel", label: "Keep it" }] });
+      if (c !== "delete") return;
+      await journal.delete(state.selectedId);
+      state.selectedId = null;
+      await goToScreen("journal");
+      toast("Entry deleted.");
+    });
+
+    $("btn-export-json").addEventListener("click", exportJSON);
+    $("btn-export-csv").addEventListener("click", () => exportCSV(false));
+    $("btn-export-csv-be").addEventListener("click", () => exportCSV(true));
+    $("import-file").addEventListener("change", handleJSONImport);
+    $("btn-help-return").addEventListener("click", () => { state.returnToWizard = false; goToScreen("wizard"); });
+    $("btn-st-rerun").addEventListener("click", startSelfTest);
+
+    // A closed tab loses at most the current field.
+    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") autosaveDraft(); });
+    window.addEventListener("pagehide", () => { autosaveDraft(); });
+    window.addEventListener("hashchange", () => { if (location.hash === "#selftest") startSelfTest(); });
+  }
+
+  (async function init() {
+    wire();
+    await initStorage();
+    if (location.hash === "#selftest") startSelfTest();
+    else await render(state);
+  })();
+  </script>
+</body>
+</html>
